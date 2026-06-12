@@ -2,8 +2,15 @@
 
 import { useState } from 'react'
 import RoleGate from '@/components/role/RoleGate'
+import Modal from '@/components/ui/Modal'
+import UseCaseList from '@/components/community/UseCaseList'
+import EventCalendar from '@/components/community/EventCalendar'
+import ProposeUseCaseForm from '@/components/community/ProposeUseCaseForm'
+import AskQuestionForm from '@/components/community/AskQuestionForm'
+import { useData } from '@/components/data/DataProvider'
 
 type Tab = 'accueil' | 'cas-usage' | 'evenements'
+type ModalKind = null | 'propose' | 'question'
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'accueil', label: 'Accueil' },
@@ -13,6 +20,8 @@ const TABS: { key: Tab; label: string }[] = [
 
 export default function UtilisateurSpace() {
   const [tab, setTab] = useState<Tab>('accueil')
+  const [modal, setModal] = useState<ModalKind>(null)
+  const { useCases, events } = useData()
 
   return (
     <RoleGate allow={['admin', 'utilisateur']}>
@@ -26,50 +35,59 @@ export default function UtilisateurSpace() {
           {TABS.map((t) => (
             <button key={t.key} className={`detail-tab ${tab === t.key ? 'active' : ''}`} onClick={() => setTab(t.key)}>
               {t.label}
+              {t.key === 'cas-usage' && <span className="tab-count">{useCases.length}</span>}
+              {t.key === 'evenements' && <span className="tab-count">{events.length}</span>}
             </button>
           ))}
         </div>
 
         {tab === 'accueil' && (
           <div className="action-grid">
-            <button className="action-card" onClick={() => setTab('cas-usage')}>
+            <button className="action-card" onClick={() => setModal('question')}>
               <div className="action-card-icon">?</div>
               <h3>Poser une question</h3>
               <p>Une interrogation sur l’IA, un outil, un usage ? Posez-la, un facilitateur vous répond.</p>
-              <span className="soon-badge">À venir</span>
             </button>
-            <button className="action-card" onClick={() => setTab('cas-usage')}>
+            <button className="action-card" onClick={() => setModal('propose')}>
               <div className="action-card-icon">+</div>
               <h3>Proposer un cas d’usage</h3>
               <p>Décrivez un besoin métier qui pourrait être adressé par l’IA. La communauté vote pour le soutenir.</p>
-              <span className="soon-badge">À venir</span>
             </button>
           </div>
         )}
 
         {tab === 'cas-usage' && (
           <section>
-            <div className="section-title">Cas d’usage soumis</div>
-            <div className="panel placeholder-panel">
-              <p>
-                Les cas d’usage proposés par les collaborateurs, classés par nombre de votes, avec un système de
-                <strong> +1 façon Reddit</strong> pour soutenir une idée.
-              </p>
-              <div className="soon-note">À construire — soumission, vote +1 et classement.</div>
+            <div className="section-bar">
+              <div className="section-title" style={{ margin: 0 }}>
+                Cas d’usage soumis — classés par votes
+              </div>
+              <button className="btn-primary sm" onClick={() => setModal('propose')}>
+                + Proposer un cas d’usage
+              </button>
             </div>
+            <UseCaseList mode="vote" />
           </section>
         )}
 
         {tab === 'evenements' && (
           <section>
             <div className="section-title">Calendrier des événements</div>
-            <div className="panel placeholder-panel">
-              <p>Prochaines dates : Café IA, Lunch &amp; Learn, démos trimestrielles, et formations Polytechnique Executive Education.</p>
-              <div className="soon-note">À construire — calendrier des prochaines dates.</div>
-            </div>
+            <EventCalendar />
           </section>
         )}
       </main>
+
+      {modal === 'propose' && (
+        <Modal title="Proposer un cas d’usage" onClose={() => setModal(null)}>
+          <ProposeUseCaseForm onDone={() => setModal(null)} />
+        </Modal>
+      )}
+      {modal === 'question' && (
+        <Modal title="Poser une question" onClose={() => setModal(null)}>
+          <AskQuestionForm onDone={() => setModal(null)} />
+        </Modal>
+      )}
     </RoleGate>
   )
 }

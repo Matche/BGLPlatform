@@ -3,6 +3,11 @@
 import { useState } from 'react'
 import RoleGate from '@/components/role/RoleGate'
 import ToolCard, { type Tool } from '@/components/spaces/ToolCard'
+import Modal from '@/components/ui/Modal'
+import UseCaseList from '@/components/community/UseCaseList'
+import EventCalendar from '@/components/community/EventCalendar'
+import CreateEventForm from '@/components/community/CreateEventForm'
+import { useData } from '@/components/data/DataProvider'
 
 type Tab = 'outils' | 'cas-usage' | 'evenements'
 
@@ -57,6 +62,8 @@ const OUTILS_AMBASSADEUR: Tool[] = [
 
 export default function FacilitateurSpace() {
   const [tab, setTab] = useState<Tab>('outils')
+  const [creating, setCreating] = useState(false)
+  const { useCases, events } = useData()
 
   return (
     <RoleGate allow={['admin', 'facilitateur']}>
@@ -70,6 +77,8 @@ export default function FacilitateurSpace() {
           {TABS.map((t) => (
             <button key={t.key} className={`detail-tab ${tab === t.key ? 'active' : ''}`} onClick={() => setTab(t.key)}>
               {t.label}
+              {t.key === 'cas-usage' && <span className="tab-count">{useCases.length}</span>}
+              {t.key === 'evenements' && <span className="tab-count">{events.length}</span>}
             </button>
           ))}
         </div>
@@ -98,38 +107,38 @@ export default function FacilitateurSpace() {
         {tab === 'cas-usage' && (
           <section>
             <div className="section-title">Cas d’usage — Face facilitateur</div>
-            <div className="panel placeholder-panel">
-              <p>
-                Prise de connaissance des cas d’usage remontés par les collaborateurs, puis administration :
-              </p>
-              <ul className="list-clean bullets" style={{ marginTop: 8 }}>
-                <li>Déduplication des cas similaires et regroupement par catégorie</li>
-                <li>Tags de priorisation : prioritaire / pas prioritaire</li>
-                <li>Tags de nature : Quick Win Copilot, Quick Win Mistral, solution custom</li>
-                <li>Qualification des Quick Win et saisie des modalités de mise en œuvre</li>
-              </ul>
-              <div className="soon-note">À construire — alimenté par les soumissions de l’espace utilisateur.</div>
-            </div>
+            <p className="section-intro">
+              Prenez connaissance des cas remontés, posez les tags de priorisation et de nature, et qualifiez les Quick
+              Win. Les votes reflètent le soutien de la communauté.
+            </p>
+            <UseCaseList mode="admin" />
           </section>
         )}
 
         {tab === 'evenements' && (
           <section>
-            <div className="section-title">Événements — Organisation</div>
-            <div className="tool-grid">
-              <ToolCard tool={{ title: 'Café IA', objective: 'Créer un Café IA et disposer d’un kit d’animation clé en main.', prio: 'P0' }} />
-              <ToolCard tool={{ title: 'Lunch & Learn', objective: 'Créer un Lunch & Learn et disposer du kit d’animation associé.', prio: 'P0' }} />
-              <ToolCard tool={{ title: 'Démo trimestrielle', objective: 'Programmer une démo trimestrielle et son support d’animation.', prio: 'P0' }} />
+            <div className="section-bar">
+              <div className="section-title" style={{ margin: 0 }}>
+                Événements — Organisation
+              </div>
+              <button className="btn-primary sm" onClick={() => setCreating(true)}>
+                + Créer un événement
+              </button>
             </div>
-            <div className="panel placeholder-panel" style={{ marginTop: 14 }}>
-              <p>
-                Les dates créées s’affichent dans le calendrier de l’espace utilisateur. Les formations Polytechnique
-                Executive Education (mise à jour techno + posture) y figurent également.
-              </p>
-            </div>
+            <p className="section-intro">
+              Créez un Café IA, un Lunch &amp; Learn ou une démo trimestrielle. Les dates s’affichent dans le calendrier
+              de l’espace utilisateur.
+            </p>
+            <EventCalendar />
           </section>
         )}
       </main>
+
+      {creating && (
+        <Modal title="Créer un événement" onClose={() => setCreating(false)}>
+          <CreateEventForm onDone={() => setCreating(false)} />
+        </Modal>
+      )}
     </RoleGate>
   )
 }

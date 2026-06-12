@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter, Barlow_Condensed } from 'next/font/google'
 import './globals.css'
 import { RoleProvider } from '@/components/role/RoleProvider'
+import { DataProvider } from '@/components/data/DataProvider'
 import AppHeader from '@/components/layout/AppHeader'
 
 const inter = Inter({
@@ -28,12 +29,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="fr" className={`${inter.variable} ${barlow.variable}`}>
       <body>
         <RoleProvider>
-          <AppHeader />
-          {children}
-          <div className="footer">
+          <DataProvider>
+            <AppHeader />
+            {children}
+            <div className="footer">
             Reporting Coaching INSKIP — AI Facilitator Programme BGL BNP · Mis à jour mensuellement à partir des
             sessions de coaching et des transcripts Notion.
-          </div>
+            </div>
+          </DataProvider>
         </RoleProvider>
       </body>
     </html>
