@@ -1,19 +1,25 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
-import { updateProjectReporting, type ReportingEdit } from '@/lib/notion'
+import { updateProjectReporting, updateProjectValidation, type ReportingEdit } from '@/lib/notion'
 
-// PATCH /api/projects/:id  — write-back du reporting micro dans Notion (§9).
-// :id = notionPageId. Corps : { reporting: { vp?, achievements?[], utilisateurs?[], warnings?[], nextSteps?[], notesMeta? } }
+// PATCH /api/projects/:id  — write-back Notion (§9). :id = notionPageId.
+// Corps : { reporting: {...} }  et/ou  { validated: boolean }
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
 
   try {
-    const body = (await req.json()) as { reporting?: ReportingEdit }
-    if (!body.reporting || typeof body.reporting !== 'object') {
-      return NextResponse.json({ error: 'Corps invalide : { reporting } attendu' }, { status: 400 })
+    const body = (await req.json()) as { reporting?: ReportingEdit; validated?: boolean }
+
+    if (typeof body.validated === 'boolean') {
+      await updateProjectValidation(id, body.validated)
     }
-    await updateProjectReporting(id, body.reporting)
-    // Rafraîchit le cache ISR pour refléter la mise à jour côté serveur.
+    if (body.reporting && typeof body.reporting === 'object') {
+      await updateProjectReporting(id, body.reporting)
+    }
+    if (typeof body.validated !== 'boolean' && !body.reporting) {
+      return NextResponse.json({ error: 'Corps invalide : { reporting } et/ou { validated } attendu' }, { status: 400 })
+    }
+
     revalidatePath('/pilotage')
     return NextResponse.json({ ok: true })
   } catch (err) {

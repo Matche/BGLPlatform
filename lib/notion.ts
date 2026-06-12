@@ -98,6 +98,7 @@ function mapPage(page: PageObjectResponse): Project {
     prioriteBudget: getSelect(p['Priorite budget']),
     coach: p['Coach']?.people?.[0]?.name ?? '',
     lastUpdated: p['Derniere mise a jour']?.date?.start ?? '',
+    validated:   p['Validation coach']?.checkbox ?? false,
   }
 }
 
@@ -155,14 +156,73 @@ export async function fetchProjects(): Promise<ProjectsPayload> {
 
 /**
  * Résout l'ID de data source à interroger (API Notion 2025-09-03 / SDK v5).
- * Priorité à NOTION_DATA_SOURCE_ID, sinon récupéré depuis la base.
+ *
+ * Ordre de priorité :
+ *  1. NOTION_DATA_SOURCE_ID (override explicite)
+ *  2. Base mensuelle « Data reporting YYYY-MM » strictement plus récente que la
+ *     base configurée (sélection automatique du mois courant)
+ *  3. Data source de la base configurée (NOTION_DATABASE_ID)
+ *
+ * Le point 2 ne bascule QUE vers un mois strictement supérieur, ce qui évite de
+ * choisir par erreur un doublon du mois courant à la place de la base de référence.
  */
 async function resolveDataSourceId(notion: Client): Promise<string> {
   if (process.env.NOTION_DATA_SOURCE_ID) return process.env.NOTION_DATA_SOURCE_ID
+
   const db = (await notion.databases.retrieve({ database_id: DATABASE_ID })) as any
-  const dsId: string | undefined = db?.data_sources?.[0]?.id
-  if (!dsId) throw new Error('Aucune data source trouvée pour la base Notion')
-  return dsId
+  const configuredDsId: string | undefined = db?.data_sources?.[0]?.id
+  if (!configuredDsId) throw new Error('Aucune data source trouvée pour la base Notion')
+  const configuredMonth = monthOf(titleText(db))
+
+  try {
+    const later = await findLaterMonthlyDataSource(notion, configuredMonth)
+    if (later) return later
+  } catch (err) {
+    console.warn('[notion] détection de la base mensuelle échouée, base configurée utilisée:', err)
+  }
+  return configuredDsId
+}
+
+function titleText(obj: any): string {
+  const t = obj?.title
+  if (Array.isArray(t)) return t.map((x: any) => x?.plain_text ?? '').join('')
+  if (typeof obj?.name === 'string') return obj.name
+  return ''
+}
+
+/** Extrait « YYYY-MM » d'un titre type « Data reporting 2026-06 ». */
+function monthOf(title: string): string {
+  const m = /(\d{4}-\d{2})/.exec(title || '')
+  return m ? m[1] : ''
+}
+
+/**
+ * Cherche une base « Data reporting YYYY-MM » dont le mois est strictement plus
+ * récent que `afterMonth`. Renvoie son data source id, ou null si aucune.
+ */
+async function findLaterMonthlyDataSource(notion: Client, afterMonth: string): Promise<string | null> {
+  const res = (await notion.search({ query: 'Data reporting', page_size: 100 })) as any
+  let bestMonth = afterMonth
+  let best: { obj: any; edited: string } | null = null
+
+  for (const r of res.results ?? []) {
+    if (r.object !== 'database' && r.object !== 'data_source') continue
+    const month = monthOf(titleText(r))
+    if (!month || month <= afterMonth) continue
+    const edited: string = r.last_edited_time ?? ''
+    if (month > bestMonth || (month === bestMonth && best && edited > best.edited)) {
+      bestMonth = month
+      best = { obj: r, edited }
+    }
+  }
+
+  if (!best) return null
+  if (best.obj.object === 'data_source') return best.obj.id
+  // database → récupérer sa première data source
+  const ds = best.obj.data_sources?.[0]?.id
+  if (ds) return ds
+  const full = (await notion.databases.retrieve({ database_id: best.obj.id })) as any
+  return full?.data_sources?.[0]?.id ?? null
 }
 
 // ── Mise à jour d'un champ numérique (édition inline future, §9 should-have) ──
@@ -174,6 +234,17 @@ export async function updateProjectNumber(pageId: string, field: string, value: 
   await notion.pages.update({
     page_id: pageId,
     properties: { [field]: { number: value } },
+  })
+}
+
+/** Met à jour la case « Validation coach » d'un projet dans Notion. */
+export async function updateProjectValidation(pageId: string, validated: boolean): Promise<void> {
+  const apiKey = process.env.NOTION_API_KEY
+  if (!apiKey) throw new Error('NOTION_API_KEY manquante')
+  const notion = new Client({ auth: apiKey })
+  await notion.pages.update({
+    page_id: pageId,
+    properties: { 'Validation coach': { checkbox: validated } },
   })
 }
 

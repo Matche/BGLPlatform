@@ -45,6 +45,7 @@ function mk(
     prioriteBudget: '',
     coach: 'Matthieu Chéreau',
     lastUpdated: '2025-12-15',
+    validated: false,
   }
 }
 

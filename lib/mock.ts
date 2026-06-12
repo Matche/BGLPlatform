@@ -71,6 +71,7 @@ export const MOCK_PROJECTS: Project[] = [
     prioriteBudget: 'Budget 2026 engagé',
     coach: COACH,
     lastUpdated: UPDATED,
+    validated: false,
   },
   {
     notionPageId: 'mock-uc1',
@@ -134,6 +135,7 @@ export const MOCK_PROJECTS: Project[] = [
     prioriteBudget: 'Budget 2026 engagé',
     coach: COACH,
     lastUpdated: UPDATED,
+    validated: false,
   },
   {
     notionPageId: 'mock-uc3',
@@ -200,6 +202,7 @@ export const MOCK_PROJECTS: Project[] = [
     prioriteBudget: 'Budget 2026 à confirmer',
     coach: COACH,
     lastUpdated: UPDATED,
+    validated: false,
   },
   {
     notionPageId: 'mock-uc5',
@@ -263,6 +266,7 @@ export const MOCK_PROJECTS: Project[] = [
     prioriteBudget: 'Budget 2026 à confirmer',
     coach: COACH,
     lastUpdated: UPDATED,
+    validated: false,
   },
   {
     notionPageId: 'mock-uc6',
@@ -327,6 +331,7 @@ export const MOCK_PROJECTS: Project[] = [
     prioriteBudget: 'Budget 2026 à confirmer',
     coach: COACH,
     lastUpdated: UPDATED,
+    validated: false,
   },
   {
     notionPageId: 'mock-uc4',
@@ -391,6 +396,7 @@ export const MOCK_PROJECTS: Project[] = [
     prioriteBudget: 'Budget 2027 envisagé',
     coach: COACH,
     lastUpdated: UPDATED,
+    validated: false,
   },
   {
     notionPageId: 'mock-uc2',
@@ -455,5 +461,6 @@ export const MOCK_PROJECTS: Project[] = [
     prioriteBudget: 'Budget 2027 envisagé',
     coach: COACH,
     lastUpdated: UPDATED,
+    validated: false,
   },
 ]

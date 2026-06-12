@@ -51,6 +51,7 @@ export interface Project {
   prioriteBudget: string
   coach: string
   lastUpdated: string
+  validated: boolean
 }
 
 /** Métadonnées de source pour la bannière (titre de la base, fraîcheur). */

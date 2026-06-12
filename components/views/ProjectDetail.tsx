@@ -57,22 +57,23 @@ export default function ProjectDetail({ project, onBack }: { project: Project; o
   const [fields, setFields] = useState<Fields>(() => fieldsFromProject(project))
   const [draft, setDraft] = useState<Draft | null>(null)
   const [edit, setEdit] = useState(false)
-  const [validated, setValidated] = useState(false)
+  const [validated, setValidated] = useState(project.validated)
   const [saving, setSaving] = useState(false)
+  const [validating, setValidating] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
 
-  const validKey = `bgl.validated.${project.notionPageId}`
   const canEdit = isAdmin && !project.notionPageId.startsWith('mock-')
 
-  // Réinitialise à chaque changement de projet (les bases Notion sont mensuelles :
-  // un nouvel ID de page = reporting non validé).
+  // Réinitialise à chaque changement de projet. La validation provient de Notion
+  // (propriété « Validation coach ») ; les bases étant mensuelles, un nouveau mois
+  // = nouvelles pages = case décochée.
   useEffect(() => {
     setFields(fieldsFromProject(project))
     setEdit(false)
     setError('')
     setSaved(false)
-    setValidated(window.localStorage.getItem(validKey) === '1')
+    setValidated(project.validated)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project.notionPageId])
 
@@ -90,9 +91,25 @@ export default function ProjectDetail({ project, onBack }: { project: Project; o
     setEdit(true)
   }
 
-  function setValidatedState(v: boolean) {
-    setValidated(v)
-    window.localStorage.setItem(validKey, v ? '1' : '0')
+  async function setValidation(v: boolean) {
+    if (validating) return
+    setValidating(true)
+    setError('')
+    const prev = validated
+    setValidated(v) // optimiste
+    try {
+      const res = await fetch(`/api/projects/${project.notionPageId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ validated: v }),
+      })
+      if (!res.ok) throw new Error('Échec de la mise à jour de la validation dans Notion')
+    } catch (e) {
+      setValidated(prev) // rollback
+      setError(e instanceof Error ? e.message : 'Erreur inconnue')
+    } finally {
+      setValidating(false)
+    }
   }
 
   async function save() {
@@ -111,7 +128,7 @@ export default function ProjectDetail({ project, onBack }: { project: Project; o
       const res = await fetch(`/api/projects/${project.notionPageId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reporting }),
+        body: JSON.stringify({ reporting, validated: false }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -120,7 +137,7 @@ export default function ProjectDetail({ project, onBack }: { project: Project; o
       setFields(reporting)
       setEdit(false)
       setSaved(true)
-      setValidatedState(false) // une modification remet le reporting en attente de validation
+      setValidated(false) // une modification remet le reporting en attente de validation (écrit dans Notion)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erreur inconnue')
     } finally {
@@ -149,12 +166,12 @@ export default function ProjectDetail({ project, onBack }: { project: Project; o
             </button>
           )}
           {validated ? (
-            <button className="valid-pill" onClick={() => setValidatedState(false)} title="Cliquer pour dévalider">
+            <button className="valid-pill" onClick={() => setValidation(false)} disabled={validating} title="Cliquer pour dévalider">
               ✓ Reporting validé
             </button>
           ) : (
-            <button className="btn-primary sm" onClick={() => setValidatedState(true)} disabled={edit}>
-              Marquer validé
+            <button className="btn-primary sm" onClick={() => setValidation(true)} disabled={edit || validating}>
+              {validating ? 'Validation…' : 'Marquer validé'}
             </button>
           )}
           {saved && <span className="save-ok">Enregistré dans Notion ✓</span>}
