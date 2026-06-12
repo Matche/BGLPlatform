@@ -532,6 +532,35 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .edit-area.light { background: rgba(255, 255, 255, .92); border-color: rgba(255, 255, 255, .5); font-size: 11px; }
 .save-bar { display: flex; gap: 9px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--grey-100); }
 
+/* === COHORTES === */
+.cohort-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+.cohort-card { text-align: left; background: #fff; border: 1px solid var(--grey-100); border-radius: var(--r-md); box-shadow: var(--sh-sm); padding: 16px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; border-top: 3px solid var(--cyan); transition: transform .15s, box-shadow .15s; }
+.cohort-card.closed { border-top-color: var(--slate); }
+.cohort-card.upcoming { border-top-color: var(--grey-500); }
+.cohort-card:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+.cohort-card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.cohort-card-head h3 { font-size: 16px; font-weight: 600; color: var(--slate); font-family: var(--font-cond); text-transform: uppercase; letter-spacing: .3px; }
+.cohort-status { font-size: 9px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; padding: 2px 8px; border-radius: 0; font-family: var(--font-cond); }
+.cohort-status.active { background: var(--green-soft); color: var(--green-dark); }
+.cohort-status.closed { background: rgba(39, 69, 92, .12); color: var(--slate); }
+.cohort-status.upcoming { background: var(--grey-100); color: var(--grey-700); }
+.cohort-card-period { font-size: 11px; color: var(--grey-500); margin-top: 3px; display: flex; gap: 8px; align-items: center; }
+.cohort-live { color: var(--green); font-weight: 600; }
+.cohort-card-desc { font-size: 11px; color: var(--grey-700); line-height: 1.45; font-weight: 300; margin: 9px 0 12px; flex: 1; }
+.cohort-card-stats { display: flex; gap: 22px; margin-bottom: 9px; }
+.cohort-stat-val { font-size: 20px; font-weight: 700; color: var(--slate); font-family: var(--font-cond); display: block; line-height: 1; }
+.cohort-stat-lbl { font-size: 9px; color: var(--grey-500); text-transform: uppercase; letter-spacing: .3px; font-family: var(--font-cond); }
+.cohort-card-open { font-size: 11px; font-weight: 600; color: var(--green-dark); font-family: var(--font-cond); text-transform: uppercase; letter-spacing: .4px; margin-top: 10px; }
+.cohort-crumb { display: flex; align-items: center; gap: 12px; padding: 14px 22px 0; }
+.cohort-crumb-name { font-size: 15px; font-weight: 700; color: var(--slate); font-family: var(--font-cond); text-transform: uppercase; letter-spacing: .3px; }
+.cohort-crumb .detail-back { margin-bottom: 0; }
+
+/* === BADGES RÔLE (admin) === */
+.role-badge { font-size: 9px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; padding: 2px 8px; border-radius: 0; font-family: var(--font-cond); }
+.role-badge.admin { background: var(--navy); color: #fff; }
+.role-badge.facilitateur { background: var(--green-soft); color: var(--green-dark); }
+.role-badge.utilisateur { background: rgba(39, 69, 92, .12); color: var(--slate); }
+
 /* Responsive — tablette (iPad landscape min, §9 must-have) */
 @media (max-width: 1024px) {
   .kpi-row { grid-template-columns: repeat(2, 1fr); }

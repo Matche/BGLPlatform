@@ -28,6 +28,7 @@ export const SPACES: SpaceDef[] = [
   { key: 'pilotage', path: '/pilotage', label: 'Pilotage', roles: ['admin'] },
   { key: 'facilitateur', path: '/facilitateur', label: 'Espace Facilitateur IA', roles: ['admin', 'facilitateur'] },
   { key: 'utilisateur', path: '/utilisateur', label: 'Espace utilisateur', roles: ['admin', 'utilisateur'] },
+  { key: 'administration', path: '/administration', label: 'Administration', roles: ['admin'] },
 ]
 
 export function spacesForRole(role: Role): SpaceDef[] {

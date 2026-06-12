@@ -3,6 +3,7 @@ import { Inter, Barlow_Condensed } from 'next/font/google'
 import './globals.css'
 import { RoleProvider } from '@/components/role/RoleProvider'
 import { DataProvider } from '@/components/data/DataProvider'
+import { AdminProvider } from '@/components/data/AdminProvider'
 import AppHeader from '@/components/layout/AppHeader'
 
 const inter = Inter({
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="fr" className={`${inter.variable} ${barlow.variable}`}>
       <body>
         <RoleProvider>
+          <AdminProvider>
           <DataProvider>
             <AppHeader />
             {children}
@@ -36,6 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             Cette plateforme est mise à disposition par Polytechnique Executive Education pour BGL BNP
             </div>
           </DataProvider>
+          </AdminProvider>
         </RoleProvider>
       </body>
     </html>
