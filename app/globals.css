@@ -521,6 +521,17 @@ button { font-family: inherit; cursor: pointer; border: none; }
   .dash-cols { grid-template-columns: 1fr; }
 }
 
+/* === ÉDITION DU REPORTING (admin) === */
+.reporting-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.valid-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--green-soft); color: var(--green-dark); border: 1px solid var(--green); border-radius: 20px; padding: 7px 14px; font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer; }
+.valid-pill:hover { background: rgba(0, 145, 90, .18); }
+.save-ok { font-size: 12px; font-weight: 600; color: var(--green-dark); }
+.pending-banner { background: var(--amber-soft); border: 1px solid var(--amber); color: #B8770C; border-radius: var(--r-sm); padding: 9px 14px; font-size: 12px; font-weight: 600; margin-bottom: 13px; display: flex; align-items: center; gap: 7px; }
+.edit-area { width: 100%; border: 1px solid var(--grey-300); border-radius: var(--r-sm); padding: 8px 10px; font-family: inherit; font-size: 12px; line-height: 1.5; outline: none; resize: vertical; color: var(--ink); background: #fff; }
+.edit-area:focus { border-color: var(--cyan); }
+.edit-area.light { background: rgba(255, 255, 255, .92); border-color: rgba(255, 255, 255, .5); font-size: 11px; }
+.save-bar { display: flex; gap: 9px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--grey-100); }
+
 /* Responsive — tablette (iPad landscape min, §9 must-have) */
 @media (max-width: 1024px) {
   .kpi-row { grid-template-columns: repeat(2, 1fr); }

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Project } from '@/types/project'
 import { AX_KEYS, AX_LABELS, AX_SUB, axisClass, getInitials } from '@/lib/utils'
+import { useRole } from '@/components/role/RoleProvider'
 
 function dpoColor(dpo: string): string {
   if (dpo === 'Validé') return '#A5F3A5'
@@ -10,22 +11,160 @@ function dpoColor(dpo: string): string {
   return '#FFE082'
 }
 
-/** Lien vers la page Notion (masqué pour les données de démo). */
 function notionUrl(pageId: string): string | null {
   if (!pageId || pageId.startsWith('mock-')) return null
   return `https://www.notion.so/${pageId.replace(/-/g, '')}`
 }
 
+function linesToArray(s: string): string[] {
+  return s.split('\n').map((t) => t.trim()).filter(Boolean)
+}
+
+interface Fields {
+  vp: string
+  achievements: string[]
+  utilisateurs: string[]
+  warnings: string[]
+  nextSteps: string[]
+  notesMeta: string
+}
+
+interface Draft {
+  vp: string
+  achievements: string
+  utilisateurs: string
+  warnings: string
+  nextSteps: string
+  notesMeta: string
+}
+
+function fieldsFromProject(p: Project): Fields {
+  return {
+    vp: p.vp,
+    achievements: p.achievements,
+    utilisateurs: p.utilisateurs,
+    warnings: p.warnings,
+    nextSteps: p.nextSteps,
+    notesMeta: p.notesMeta,
+  }
+}
+
 export default function ProjectDetail({ project, onBack }: { project: Project; onBack: () => void }) {
+  const { role } = useRole()
+  const isAdmin = role === 'admin'
   const [tab, setTab] = useState<'current' | 'notes'>('current')
+
+  const [fields, setFields] = useState<Fields>(() => fieldsFromProject(project))
+  const [draft, setDraft] = useState<Draft | null>(null)
+  const [edit, setEdit] = useState(false)
+  const [validated, setValidated] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [saved, setSaved] = useState(false)
+
+  const validKey = `bgl.validated.${project.notionPageId}`
+  const canEdit = isAdmin && !project.notionPageId.startsWith('mock-')
+
+  // Réinitialise à chaque changement de projet (les bases Notion sont mensuelles :
+  // un nouvel ID de page = reporting non validé).
+  useEffect(() => {
+    setFields(fieldsFromProject(project))
+    setEdit(false)
+    setError('')
+    setSaved(false)
+    setValidated(window.localStorage.getItem(validKey) === '1')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project.notionPageId])
+
+  function enterEdit() {
+    setDraft({
+      vp: fields.vp,
+      achievements: fields.achievements.join('\n'),
+      utilisateurs: fields.utilisateurs.join('\n'),
+      warnings: fields.warnings.join('\n'),
+      nextSteps: fields.nextSteps.join('\n'),
+      notesMeta: fields.notesMeta,
+    })
+    setSaved(false)
+    setError('')
+    setEdit(true)
+  }
+
+  function setValidatedState(v: boolean) {
+    setValidated(v)
+    window.localStorage.setItem(validKey, v ? '1' : '0')
+  }
+
+  async function save() {
+    if (!draft) return
+    setSaving(true)
+    setError('')
+    const reporting = {
+      vp: draft.vp.trim(),
+      achievements: linesToArray(draft.achievements),
+      utilisateurs: linesToArray(draft.utilisateurs),
+      warnings: linesToArray(draft.warnings),
+      nextSteps: linesToArray(draft.nextSteps),
+      notesMeta: draft.notesMeta.trim(),
+    }
+    try {
+      const res = await fetch(`/api/projects/${project.notionPageId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reporting }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Échec de l’enregistrement')
+      }
+      setFields(reporting)
+      setEdit(false)
+      setSaved(true)
+      setValidatedState(false) // une modification remet le reporting en attente de validation
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur inconnue')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const p = project
-  const nUrl = notionUrl(p.notionPageId)
 
   return (
     <section className="view-section active">
       <button className="detail-back" onClick={onBack}>
         ← Retour à la vue macro
       </button>
+
+      {/* Barre de reporting (admin) */}
+      {canEdit && (
+        <div className="reporting-bar">
+          {!edit ? (
+            <button className="btn-secondary sm" onClick={enterEdit}>
+              ✎ Modifier le reporting
+            </button>
+          ) : (
+            <button className="btn-secondary sm" onClick={() => setEdit(false)} disabled={saving}>
+              ✕ Annuler
+            </button>
+          )}
+          {validated ? (
+            <button className="valid-pill" onClick={() => setValidatedState(false)} title="Cliquer pour dévalider">
+              ✓ Reporting validé
+            </button>
+          ) : (
+            <button className="btn-primary sm" onClick={() => setValidatedState(true)} disabled={edit}>
+              Marquer validé
+            </button>
+          )}
+          {saved && <span className="save-ok">Enregistré dans Notion ✓</span>}
+        </div>
+      )}
+
+      {canEdit && !validated && (
+        <div className="pending-banner">⏳ En attente de validation du coach</div>
+      )}
+      {error && <div className="form-error" style={{ marginBottom: 12 }}>{error}</div>}
 
       <div className="detail-tabs">
         <button className={`detail-tab ${tab === 'current' ? 'active' : ''}`} onClick={() => setTab('current')}>
@@ -45,7 +184,16 @@ export default function ProjectDetail({ project, onBack }: { project: Project; o
 
             <div className="vp-box">
               <h4>Proposition de valeur</h4>
-              <div className="vp-text">{p.vp}</div>
+              {edit ? (
+                <textarea
+                  className="edit-area light"
+                  rows={4}
+                  value={draft!.vp}
+                  onChange={(e) => setDraft({ ...draft!, vp: e.target.value })}
+                />
+              ) : (
+                <div className="vp-text">{fields.vp}</div>
+              )}
             </div>
 
             <div className="conf-section">
@@ -99,8 +247,8 @@ export default function ProjectDetail({ project, onBack }: { project: Project; o
                 <span className="right-header-tag">{p.id.toUpperCase()}</span>
                 <span className={`right-header-status ${p.status === 'IDEATION' ? 'idea' : ''}`}>{p.status}</span>
               </div>
-              {nUrl && (
-                <a className="notion-link" href={nUrl} target="_blank" rel="noopener noreferrer">
+              {notionUrl(p.notionPageId) && (
+                <a className="notion-link" href={notionUrl(p.notionPageId)!} target="_blank" rel="noopener noreferrer">
                   Ouvrir dans Notion ↗
                 </a>
               )}
@@ -146,21 +294,41 @@ export default function ProjectDetail({ project, onBack }: { project: Project; o
                   <div className="section-title" style={{ fontSize: 13, marginBottom: 8 }}>
                     Achievements
                   </div>
-                  <ul className="list-clean bullets">
-                    {p.achievements.map((a, i) => (
-                      <li key={i}>{a}</li>
-                    ))}
-                  </ul>
+                  {edit ? (
+                    <textarea
+                      className="edit-area"
+                      rows={5}
+                      placeholder="Un élément par ligne"
+                      value={draft!.achievements}
+                      onChange={(e) => setDraft({ ...draft!, achievements: e.target.value })}
+                    />
+                  ) : (
+                    <ul className="list-clean bullets">
+                      {fields.achievements.map((a, i) => (
+                        <li key={i}>{a}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
                 <div>
                   <div className="section-title" style={{ fontSize: 13, marginBottom: 8 }}>
                     Utilisateurs internes cibles
                   </div>
-                  <ul className="list-clean targets">
-                    {p.utilisateurs.map((u, i) => (
-                      <li key={i}>{u}</li>
-                    ))}
-                  </ul>
+                  {edit ? (
+                    <textarea
+                      className="edit-area"
+                      rows={5}
+                      placeholder="Un élément par ligne"
+                      value={draft!.utilisateurs}
+                      onChange={(e) => setDraft({ ...draft!, utilisateurs: e.target.value })}
+                    />
+                  ) : (
+                    <ul className="list-clean targets">
+                      {fields.utilisateurs.map((u, i) => (
+                        <li key={i}>{u}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
 
@@ -168,23 +336,54 @@ export default function ProjectDetail({ project, onBack }: { project: Project; o
                 <div className="section-title" style={{ fontSize: 13, marginBottom: 8 }}>
                   Warnings
                 </div>
-                <ul className="list-clean warnings">
-                  {p.warnings.map((w, i) => (
-                    <li key={i}>{w}</li>
-                  ))}
-                </ul>
+                {edit ? (
+                  <textarea
+                    className="edit-area"
+                    rows={4}
+                    placeholder="Un élément par ligne"
+                    value={draft!.warnings}
+                    onChange={(e) => setDraft({ ...draft!, warnings: e.target.value })}
+                  />
+                ) : (
+                  <ul className="list-clean warnings">
+                    {fields.warnings.map((w, i) => (
+                      <li key={i}>{w}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <div className="next-steps-box">
                 <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--purple)', marginBottom: 7 }}>
                   Prochaines étapes
                 </div>
-                <ul className="next-steps-list">
-                  {p.nextSteps.map((n, i) => (
-                    <li key={i}>{n}</li>
-                  ))}
-                </ul>
+                {edit ? (
+                  <textarea
+                    className="edit-area"
+                    rows={4}
+                    placeholder="Un élément par ligne"
+                    value={draft!.nextSteps}
+                    onChange={(e) => setDraft({ ...draft!, nextSteps: e.target.value })}
+                  />
+                ) : (
+                  <ul className="next-steps-list">
+                    {fields.nextSteps.map((n, i) => (
+                      <li key={i}>{n}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
+
+              {edit && (
+                <div className="save-bar">
+                  <button className="btn-primary" onClick={save} disabled={saving}>
+                    {saving ? 'Enregistrement…' : '💾 Enregistrer dans Notion'}
+                  </button>
+                  <button className="btn-secondary" onClick={() => setEdit(false)} disabled={saving}>
+                    Annuler
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -193,19 +392,38 @@ export default function ProjectDetail({ project, onBack }: { project: Project; o
           <div className="section-title" style={{ marginBottom: 12 }}>
             Notes meta coach
           </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: 'var(--grey-700)',
-              lineHeight: 1.6,
-              background: 'var(--grey-50)',
-              padding: '13px 15px',
-              borderRadius: 'var(--r-sm)',
-              borderLeft: '4px solid var(--cyan)',
-            }}
-          >
-            {p.notesMeta}
-          </div>
+          {edit ? (
+            <>
+              <textarea
+                className="edit-area"
+                rows={6}
+                value={draft!.notesMeta}
+                onChange={(e) => setDraft({ ...draft!, notesMeta: e.target.value })}
+              />
+              <div className="save-bar">
+                <button className="btn-primary" onClick={save} disabled={saving}>
+                  {saving ? 'Enregistrement…' : '💾 Enregistrer dans Notion'}
+                </button>
+                <button className="btn-secondary" onClick={() => setEdit(false)} disabled={saving}>
+                  Annuler
+                </button>
+              </div>
+            </>
+          ) : (
+            <div
+              style={{
+                fontSize: 12,
+                color: 'var(--grey-700)',
+                lineHeight: 1.6,
+                background: 'var(--grey-50)',
+                padding: '13px 15px',
+                borderRadius: 'var(--r-sm)',
+                borderLeft: '4px solid var(--cyan)',
+              }}
+            >
+              {fields.notesMeta}
+            </div>
+          )}
         </div>
       )}
     </section>

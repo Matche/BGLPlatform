@@ -176,3 +176,58 @@ export async function updateProjectNumber(pageId: string, field: string, value: 
     properties: { [field]: { number: value } },
   })
 }
+
+// ── Write-back du reporting micro (édition inline admin, §9) ─────────────────
+
+/** Champs texte éditables du reporting et leur propriété Notion. */
+export interface ReportingEdit {
+  vp?: string
+  achievements?: string[]
+  utilisateurs?: string[]
+  warnings?: string[]
+  nextSteps?: string[]
+  notesMeta?: string
+}
+
+/** Découpe en blocs ≤ 2000 caractères (limite Notion par objet rich_text). */
+function richText(content: string): { text: { content: string } }[] {
+  if (!content) return []
+  const chunks: { text: { content: string } }[] = []
+  let s = content
+  while (s.length > 0) {
+    chunks.push({ text: { content: s.slice(0, 2000) } })
+    s = s.slice(2000)
+  }
+  return chunks
+}
+
+const TEXT_PROP: Record<string, string> = {
+  vp: 'Value Proposition',
+  notesMeta: 'Notes meta',
+}
+const LIST_PROP: Record<string, string> = {
+  achievements: 'Achievements',
+  utilisateurs: 'Utilisateurs internes',
+  warnings: 'Warnings',
+  nextSteps: 'Next Steps',
+}
+
+/** Met à jour les champs texte d'un projet dans Notion. */
+export async function updateProjectReporting(pageId: string, edit: ReportingEdit): Promise<void> {
+  const apiKey = process.env.NOTION_API_KEY
+  if (!apiKey) throw new Error('NOTION_API_KEY manquante')
+  const notion = new Client({ auth: apiKey })
+
+  const properties: Record<string, { rich_text: { text: { content: string } }[] }> = {}
+  for (const [key, prop] of Object.entries(TEXT_PROP)) {
+    const val = (edit as Record<string, unknown>)[key]
+    if (typeof val === 'string') properties[prop] = { rich_text: richText(val) }
+  }
+  for (const [key, prop] of Object.entries(LIST_PROP)) {
+    const val = (edit as Record<string, unknown>)[key]
+    if (Array.isArray(val)) properties[prop] = { rich_text: richText((val as string[]).join('\n')) }
+  }
+
+  if (Object.keys(properties).length === 0) return
+  await notion.pages.update({ page_id: pageId, properties })
+}
