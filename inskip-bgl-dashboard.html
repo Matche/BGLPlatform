@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>INSKIP — AI Facilitator BGL BNP</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
+<style>
+:root{color-scheme:light;--green:#00915A;--green-dark:#006640;--green-soft:rgba(0,145,90,.10);--lime:#7FC800;--amber:#EC9A00;--amber-soft:rgba(236,154,0,.12);--slate:#27455C;--navy:#101010;--cyan:var(--green);--cyan-dark:var(--green-dark);--cyan-soft:var(--green-soft);--magenta:#E07818;--magenta-soft:#FEF3E6;--purple:var(--slate);--ink:#212121;--grey-700:#696969;--grey-500:#A7A7A7;--grey-300:#DDDDDD;--grey-100:#F2F2F0;--grey-50:#F3F2F1;--sh-sm:rgba(161,163,184,.3) 0 8px 10px 0;--sh-md:rgba(161,163,184,.4) 0 12px 18px 0;--r-sm:5px;--r-md:5px;--font:"Inter","bnpp-type-light",BlinkMacSystemFont,Helvetica,sans-serif;--font-cond:"Barlow Condensed","bnpp-sans-cond",sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:var(--font);font-size:14px;color:var(--ink);background:var(--grey-50);line-height:1.5;-webkit-font-smoothing:antialiased;font-weight:300}
+button{font-family:inherit;cursor:pointer;border:none}
+/* HEADER */
+.top-header{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;background:var(--navy);border-bottom:1px solid rgba(255,255,255,.1);position:sticky;top:0;z-index:50}
+.brand{display:flex;align-items:center;gap:13px}
+.brand-logo{font-weight:700;font-size:18px;letter-spacing:1.5px;color:#fff;font-family:var(--font-cond);text-transform:uppercase}
+.brand-logo span{color:var(--green)}
+.brand-divider{width:1px;height:20px;background:rgba(255,255,255,.2)}
+.brand-title{font-weight:600;font-size:11px;color:#fff;letter-spacing:.6px;text-transform:uppercase;font-family:var(--font-cond)}
+.brand-sub{font-size:10px;color:var(--lime);font-weight:600;letter-spacing:.4px}
+.top-nav{display:flex;gap:5px}
+.nav-btn{padding:7px 16px;background:transparent;color:rgba(255,255,255,.65);font-weight:500;font-size:12px;border-radius:20px;display:flex;align-items:center;gap:5px;transition:background .15s,color .15s;font-family:var(--font)}
+.nav-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-btn.active{background:var(--green);color:#fff}
+.nav-btn .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.8}
+.report-tag-pill{background:var(--green);color:#fff;padding:4px 12px;border-radius:20px;font-weight:600;font-size:11px;letter-spacing:.5px}
+/* BANNER */
+.source-banner{background:linear-gradient(90deg,var(--green-soft),#fff);border-bottom:2px solid var(--green);padding:6px 22px;font-size:11px;color:var(--green-dark);display:flex;justify-content:space-between;align-items:center}
+.dot-status{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px}
+/* LAYOUT — sidebar toujours visible */
+.app{display:grid;grid-template-columns:240px 1fr;min-height:500px}
+/* SIDEBAR */
+.sidebar{background:#fff;border-right:1px solid var(--grey-100);padding:14px 10px}
+.sidebar-header{display:flex;justify-content:space-between;align-items:center;padding:0 6px 10px}
+.sidebar-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--grey-500)}
+.sidebar-count{font-size:10px;color:var(--grey-500);background:var(--grey-100);padding:2px 7px;border-radius:10px}
+.search-box{position:relative;margin-bottom:10px;padding:0 2px}
+.search-box input{width:100%;padding:7px 8px 7px 27px;border:1px solid var(--grey-300);border-radius:var(--r-sm);font-size:11px;font-family:inherit;outline:none;background:var(--grey-50);transition:border .15s}
+.search-box input:focus{border-color:var(--cyan);background:#fff}
+.search-box::before{content:'';position:absolute;left:11px;top:50%;width:11px;height:11px;transform:translateY(-50%);background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%238A8AA0' stroke-width='1.5'><circle cx='7' cy='7' r='5'/><path d='M11 11l3 3'/></svg>") no-repeat center}
+.filter-row{display:flex;gap:5px;padding:0 2px;margin-bottom:10px}
+.filter-chip{flex:1;padding:5px 5px;border:1px solid var(--grey-300);background:#fff;border-radius:999px;font-size:10px;font-weight:600;color:var(--grey-700);text-align:center}
+.filter-chip:hover{border-color:var(--cyan);color:var(--cyan)}
+.filter-chip.active.all{background:var(--cyan);border-color:var(--cyan);color:#fff}
+.filter-chip.active.proto{background:var(--slate);border-color:var(--slate);color:#fff}
+.filter-chip.active.idea{background:var(--navy);border-color:var(--navy);color:#fff}
+.project-list{list-style:none}
+.project-item{padding:9px 11px;border-radius:var(--r-sm);cursor:pointer;margin-bottom:3px;border-left:3px solid transparent;transition:background .12s,border-color .12s}
+.project-item:hover{background:var(--grey-50)}
+.project-item.active{background:var(--cyan-soft);border-left-color:var(--cyan)}
+.pi-name{font-weight:600;font-size:12px;color:var(--slate);display:flex;justify-content:space-between;align-items:center}
+.pi-meta{font-size:10px;color:var(--grey-500);margin-top:1px}
+.status-pip{display:inline-block;font-size:8px;font-weight:600;letter-spacing:.5px;padding:2px 6px;border-radius:0;text-transform:uppercase;flex-shrink:0;font-family:var(--font-cond)}
+.status-pip.proto{background:rgba(39,69,92,.15);color:var(--slate)}
+.status-pip.idea{background:rgba(16,16,16,.08);color:var(--navy)}
+/* MAIN */
+.main{padding:20px 22px;overflow-x:hidden}
+.view-section{display:none}
+.view-section.active{display:block}
+/* === VUE MACRO === */
+.macro-header{margin-bottom:16px}
+.macro-header h1{font-size:22px;font-weight:600;color:var(--slate);letter-spacing:.15px;font-family:var(--font-cond);text-transform:uppercase}
+.macro-header p{margin:3px 0 0;font-size:12px;color:var(--grey-700);font-weight:300}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.kpi-card{background:#fff;border-radius:var(--r-md);padding:13px 15px;box-shadow:var(--sh-sm);border:1px solid var(--grey-100);position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--cyan)}
+.kpi-card.magenta::before{background:var(--amber)}
+.kpi-card.purple::before{background:var(--purple)}
+.kpi-card.cyan-dark::before{background:var(--cyan-dark)}
+.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;color:var(--grey-500)}
+.kpi-value{font-size:26px;font-weight:700;color:var(--slate);margin-top:4px;letter-spacing:-.5px;font-family:var(--font-cond)}
+.kpi-sub{font-size:10px;color:var(--grey-700);margin-top:2px;font-weight:300}
+.section-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:12px;margin-bottom:16px}
+.panel{background:#fff;border:1px solid var(--grey-100);border-radius:var(--r-md);padding:14px;box-shadow:var(--sh-sm)}
+.panel-title{font-size:11px;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin:0 0 11px;display:flex;align-items:center;gap:6px;font-family:var(--font-cond)}
+.panel-title::before{content:'';width:3px;height:12px;background:var(--cyan);border-radius:2px}
+.panel-title.magenta::before{background:var(--magenta)}
+.chart-wrap{position:relative;height:340px}
+.chart-wrap-sm{position:relative;height:165px}
+.project-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:10px}
+.proj-card{background:#fff;border:1px solid var(--grey-100);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--sh-sm);cursor:pointer;transition:transform .15s,box-shadow .15s;display:flex;flex-direction:column}
+.proj-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+.proj-card-head{background:var(--cyan);color:#fff;padding:11px 13px;display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+.proj-card-head h3{margin:0;font-size:14px;font-weight:600;letter-spacing:.3px;font-family:var(--font-cond)}
+.proj-card-status{font-size:8px;font-weight:600;letter-spacing:.6px;background:var(--slate);color:#fff;padding:2px 7px;border-radius:0;text-transform:uppercase;flex-shrink:0;font-family:var(--font-cond)}
+.proj-card-status.idea{background:rgba(255,255,255,.22)}
+.proj-card-body{padding:11px 13px 13px;flex:1;display:flex;flex-direction:column}
+.proj-card-vp{font-size:11px;color:var(--grey-700);line-height:1.4;margin-bottom:9px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:300}
+.proj-card-meta{display:flex;justify-content:space-between;font-size:10px;color:var(--grey-500);margin-bottom:8px}
+.proj-card-progress{margin-top:auto}
+.pm-label{display:flex;justify-content:space-between;font-size:10px;font-weight:600;color:var(--grey-700);margin-bottom:3px}
+.pm-label strong{color:var(--purple)}
+.pm-track{height:5px;background:var(--grey-100);border-radius:3px;overflow:hidden}
+.pm-fill{height:100%;background:linear-gradient(90deg,var(--cyan) 0%,var(--magenta) 100%);border-radius:3px}
+/* === VUE PROJET (détail avec sidebar) === */
+.detail-back{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--grey-700);background:#fff;border:1px solid var(--grey-300);padding:6px 14px;border-radius:20px;margin-bottom:12px;font-weight:500}
+.detail-back:hover{border-color:var(--cyan);color:var(--cyan)}
+.detail-tabs{display:flex;gap:3px;background:#fff;padding:5px;border-radius:20px;box-shadow:var(--sh-sm);margin-bottom:13px;border:1px solid var(--grey-100);width:fit-content}
+.detail-tab{padding:6px 16px;background:transparent;color:var(--grey-700);font-weight:600;font-size:12px;border-radius:var(--r-sm);transition:background .15s,color .15s}
+.detail-tab:hover{background:var(--grey-50);color:var(--purple)}
+.detail-tab.active{background:var(--green);color:#fff}
+/* Panneau détail : colonne gauche cyan + colonne droite blanche */
+.detail-view{background:#fff;border-radius:var(--r-md);box-shadow:var(--sh-md);overflow:hidden;display:grid;grid-template-columns:220px 1fr}
+.left-panel{background:var(--cyan);color:#fff;padding:18px 16px 24px}
+.left-board{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:600;margin-bottom:12px;opacity:.9;flex-wrap:wrap}
+.left-board::before{content:'';width:12px;height:12px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='1.5'><rect x='2' y='3' width='12' height='11' rx='1.2'/><path d='M2 6h12M5 1v3M11 1v3'/></svg>") no-repeat center;flex-shrink:0}
+.project-name{font-size:22px;font-weight:700;letter-spacing:.5px;margin:0 0 16px;line-height:1.05;font-family:var(--font-cond);text-transform:uppercase}
+.vp-box{background:rgba(255,255,255,.18);border-radius:6px;padding:11px 11px 13px;margin-bottom:14px}
+.vp-box h4{margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.vp-text{font-size:10px;line-height:1.5}
+.conf-section h4{font-size:10px;font-weight:700;margin:0 0 7px;color:var(--magenta-soft)}
+.conf-item{font-size:9px;padding:2px 0 2px 11px;position:relative;line-height:1.4}
+.conf-item::before{content:'›';position:absolute;left:0;color:rgba(255,255,255,.55);font-weight:800}
+.conf-pills{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
+.conf-pill{background:rgba(255,255,255,.18);padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700}
+.team-section{margin-top:16px;border-top:1px solid rgba(255,255,255,.3);padding-top:13px;position:relative}
+.team-label{font-size:18px;font-weight:700;font-family:var(--font-cond);letter-spacing:1px;writing-mode:vertical-rl;transform:rotate(180deg);position:absolute;left:-4px;top:22px;opacity:.28}
+.team-list{padding-left:24px}
+.team-member{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.team-avatar{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;border:2px solid rgba(255,255,255,.35)}
+.team-name{font-size:10px;font-weight:700}
+.team-role{font-size:9px;opacity:.85;line-height:1.2}
+.team-org{font-size:9px;opacity:.75}
+.stakeholders{margin-top:11px;padding-top:9px;border-top:1px dashed rgba(255,255,255,.4)}
+.stk-title{font-size:9px;font-weight:700;margin-bottom:6px;letter-spacing:.3px}
+.stk-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.stk-item{font-size:8px;line-height:1.3}
+.stk-item strong{display:block;font-size:9px}
+/* Panneau droit */
+.right-panel{}
+.right-header{display:flex;justify-content:space-between;align-items:center;padding:13px 20px;border-bottom:1px solid var(--grey-100)}
+.right-header-tag{background:var(--green);color:#fff;padding:4px 14px;border-radius:20px;font-weight:600;font-size:11px;letter-spacing:.6px;font-family:var(--font-cond)}
+.right-header-status{background:var(--magenta);color:#fff;padding:4px 11px;border-radius:4px;font-weight:800;font-size:10px;letter-spacing:.8px}
+.right-header-status.idea{background:var(--purple)}
+.right-body{padding:16px 20px 20px}
+.section-title{font-size:13px;font-weight:700;color:var(--slate);margin:0 0 11px;position:relative;padding-left:12px;font-family:var(--font-cond);text-transform:uppercase;letter-spacing:.4px}
+.section-title::before{content:'';position:absolute;left:0;top:3px;bottom:3px;width:3px;background:var(--cyan);border-radius:2px}
+/* Axes */
+.axes-row{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:18px}
+.axis-cell{border-radius:var(--r-sm);padding:7px 5px;text-align:center;border:1px solid}
+.axis-cell.ok{background:#E0F4E0;border-color:#B5D8B5}
+.axis-cell.mid{background:#FFF4D6;border-color:#F5D880}
+.axis-cell.ko{background:var(--magenta-soft);border-color:rgba(224,120,24,.35)}
+.axis-cell.none{background:var(--grey-50);border-color:var(--grey-100)}
+.ax-lbl{font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--grey-500);margin-bottom:2px;font-family:var(--font-cond)}
+.axis-cell.ok .ax-lbl{color:#2E7D32}
+.axis-cell.mid .ax-lbl{color:#B8770C}
+.axis-cell.ko .ax-lbl{color:var(--magenta)}
+.ax-val{font-size:17px;font-weight:700;color:var(--slate);font-family:var(--font-cond)}
+.axis-cell.ok .ax-val{color:#2E7D32}
+.axis-cell.mid .ax-val{color:#B8770C}
+.axis-cell.ko .ax-val{color:var(--magenta)}
+.ax-sub{font-size:8px;color:var(--grey-500);margin-top:1px}
+.axis-cell.ok .ax-sub{color:#4CAF50}
+.axis-cell.mid .ax-sub{color:#F59E0B}
+.axis-cell.ko .ax-sub{color:var(--magenta)}
+/* Objectifs — marqueur triangle identique à Leonard */
+.objectives{margin-bottom:18px}
+.objective{display:grid;grid-template-columns:170px 1fr 54px;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--grey-100)}
+.objective:last-child{border-bottom:none}
+.obj-cat{font-size:9px;font-weight:700;text-transform:uppercase;color:var(--slate);letter-spacing:.5px;font-family:var(--font-cond)}
+.obj-desc{font-size:9px;color:var(--grey-700);line-height:1.4;margin-top:1px}
+.obj-bar{position:relative;height:14px;display:flex;align-items:center}
+.obj-bar-track{flex:1;height:2px;background:var(--slate);position:relative}
+.obj-bar-marker{position:absolute;top:50%;transform:translate(-50%,-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:8px solid var(--green)}
+.obj-bar-marker::after{content:'';position:absolute;top:8px;left:-6px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid var(--slate)}
+.obj-pct{background:var(--slate);color:#fff;font-weight:600;font-size:11px;text-align:center;padding:3px 9px;border-radius:0;font-family:var(--font-cond)}
+/* Two-col + listes */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:16px}
+.list-clean{list-style:none}
+.list-clean.bullets li{font-size:11px;padding:3px 0 3px 16px;position:relative;line-height:1.4}
+.list-clean.bullets li::before{content:'•';position:absolute;left:4px;color:var(--cyan);font-weight:800}
+.list-clean.targets li{font-size:11px;padding:3px 0 3px 21px;position:relative;line-height:1.4}
+.list-clean.targets li::before{content:'';position:absolute;left:0;top:6px;width:12px;height:12px;border:2px solid var(--magenta);border-radius:50%}
+.list-clean.warnings li{font-size:11px;padding:3px 0 3px 19px;position:relative}
+.list-clean.warnings li::before{content:'✸';position:absolute;left:2px;color:var(--magenta);font-size:11px;font-weight:800}
+.warning-box{margin-bottom:16px}
+.next-steps-box{background:var(--grey-50);border-left:4px solid var(--cyan);border-radius:4px;padding:12px 14px}
+.next-steps-list{list-style:none}
+.next-steps-list li{font-size:11px;padding:2px 0 2px 14px;position:relative;line-height:1.5}
+.next-steps-list li::before{content:'→';position:absolute;left:0;color:var(--cyan);font-weight:800}
+/* === CHAT === */
+.chat-wrap{background:#fff;border-radius:var(--r-md);box-shadow:var(--sh-sm);border:1px solid var(--grey-100);overflow:hidden}
+.chat-header{padding:14px 18px;border-bottom:1px solid var(--grey-100);display:flex;justify-content:space-between;align-items:center}
+.chat-header h2{font-size:14px;color:var(--purple);font-weight:800}
+.chat-header p{font-size:10px;color:var(--grey-700);margin-top:2px}
+.chat-ctx-pill{background:var(--green-soft);color:var(--green-dark);border:1px solid var(--green);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:500}
+.chat-body{padding:14px 18px;background:var(--grey-50);min-height:160px}
+.chat-msg{display:flex;margin-bottom:10px;gap:8px}
+.chat-msg.user{flex-direction:row-reverse}
+.chat-bubble{max-width:78%;padding:8px 12px;border-radius:10px;font-size:12px;line-height:1.5}
+.chat-msg.user .chat-bubble{background:var(--cyan);color:#fff;border-bottom-right-radius:3px}
+.chat-msg.assistant .chat-bubble{background:#fff;color:var(--ink);border:1px solid var(--grey-100);border-bottom-left-radius:3px;box-shadow:var(--sh-sm)}
+.chat-bubble p{margin:0 0 4px}.chat-bubble p:last-child{margin:0}
+.chat-bubble strong{color:var(--purple)}
+.chat-bubble ul{margin:3px 0 4px 14px;padding:0}
+.chat-bubble li{margin-bottom:1px}
+.chat-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0}
+.chat-msg.user .chat-avatar{background:var(--slate)}
+.chat-msg.assistant .chat-avatar{background:var(--green)}
+.chat-input-row{border-top:1px solid var(--grey-100);padding:10px 16px;display:flex;gap:8px;align-items:flex-end;background:#fff}
+.chat-input-row textarea{flex:1;border:1px solid var(--grey-300);border-radius:var(--r-sm);padding:8px 10px;font-family:inherit;font-size:12px;resize:none;min-height:36px;outline:none;transition:border .15s}
+.chat-input-row textarea:focus{border-color:var(--cyan)}
+.chat-send{background:var(--cyan);color:#fff;border-radius:var(--r-sm);padding:8px 14px;font-weight:700;font-size:12px;align-self:stretch;transition:background .15s}
+.chat-send:hover{background:var(--cyan-dark)}
+.suggestion-row{display:flex;gap:6px;flex-wrap:wrap;padding:0 18px 12px;background:var(--grey-50)}
+.suggestion{font-size:10px;background:#fff;border:1px solid var(--grey-300);border-radius:999px;padding:4px 10px;color:var(--grey-700);font-weight:600}
+.suggestion:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-soft)}
+.thinking{display:inline-flex;align-items:center;gap:3px}
+.thinking span{width:5px;height:5px;border-radius:50%;background:var(--cyan);animation:bounce 1.2s infinite}
+.thinking span:nth-child(2){animation-delay:.15s}
+.thinking span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:scale(.6);opacity:.5}40%{transform:scale(1);opacity:1}}
+.footer{text-align:center;font-size:10px;color:var(--grey-500);padding:14px;border-top:1px solid var(--grey-100);background:var(--grey-50);font-weight:300}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<header class="top-header">
+  <div class="brand">
+    <div class="brand-logo">INS<span>KIP</span></div>
+    <div class="brand-divider"></div>
+    <div>
+      <div class="brand-title">AI Facilitator Programme</div>
+      <div class="brand-sub">BGL BNP · Coaching 2026</div>
+    </div>
+  </div>
+  <nav class="top-nav">
+    <button class="nav-btn active" data-view="macro" onclick="setView('macro')"><span class="dot"></span> Vue macro</button>
+    <button class="nav-btn" data-view="detail" onclick="setView('detail')"><span class="dot"></span> Vue projet</button>
+    <button class="nav-btn" data-view="chat" onclick="setView('chat')"><span class="dot"></span> Chat</button>
+  </nav>
+  <span class="report-tag-pill">Reporting 2026-06</span>
+</header>
+
+<div class="source-banner">
+  <div><span class="dot-status"></span>Source : <strong>Reporting consolidé BGL BNP — Coaching INSKIP</strong></div>
+  <span>Mise à jour : <strong>05 juin 2026</strong></span>
+</div>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">Projets</div>
+      <div class="sidebar-count" id="sb-count">7</div>
+    </div>
+    <div class="search-box"><input type="text" id="search-input" placeholder="Rechercher…"></div>
+    <div class="filter-row">
+      <button class="filter-chip active all" data-filter="all">Tous</button>
+      <button class="filter-chip proto" data-filter="PROTOTYPE">Prototype</button>
+      <button class="filter-chip idea" data-filter="IDEATION">Idéation</button>
+    </div>
+    <ul class="project-list" id="project-list"></ul>
+  </aside>
+
+  <main class="main">
+
+    <!-- VUE MACRO -->
+    <section id="view-macro" class="view-section active">
+      <div class="macro-header">
+        <div>
+          <h1>Vue d'ensemble — Programme BGL BNP</h1>
+          <p>Synthèse des projets IA internes coachés par INSKIP · Juin 2026</p>
+        </div>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi-card"><div class="kpi-label">Projets actifs</div><div class="kpi-value">7</div><div class="kpi-sub">dans la promotion 2026</div></div>
+        <div class="kpi-card magenta"><div class="kpi-label">En prototype</div><div class="kpi-value" id="kpi-proto">—</div><div class="kpi-sub">phase d'expérimentation</div></div>
+        <div class="kpi-card purple"><div class="kpi-label">Sans sponsor</div><div class="kpi-value">3</div><div class="kpi-sub">gouvernance à sécuriser</div></div>
+        <div class="kpi-card cyan-dark"><div class="kpi-label">Avancement moyen</div><div class="kpi-value" id="kpi-avg">—</div><div class="kpi-sub">sur l'ensemble des objectifs</div></div>
+      </div>
+      <div class="section-grid">
+        <div class="panel"><h3 class="panel-title">Avancement par projet</h3><div class="chart-wrap"><canvas id="chart-progress" role="img" aria-label="Avancement par projet en pourcentage">RM Briefing 55%, SAR 45%, Scoring CV 35%, Best Offer 15%, Client Insight 20%, Cartographie 10%, Profilage 5%.</canvas></div></div>
+        <div class="panel"><h3 class="panel-title magenta">Score moyen par axe</h3><div class="chart-wrap-sm"><canvas id="chart-axes" role="img" aria-label="Score moyen par axe d'évaluation">Tests utilisateurs et gouvernance sont les axes les plus faibles.</canvas></div><div style="margin-top:11px;font-size:11px;color:var(--grey-700);text-align:center">Tests utilisateurs et gouvernance sont les axes les plus fragiles du programme.</div></div>
+      </div>
+      <div class="panel"><h3 class="panel-title">Projets — détail rapide</h3><div class="project-grid" id="project-grid"></div></div>
+    </section>
+
+    <!-- VUE PROJET -->
+    <section id="view-detail" class="view-section">
+      <button class="detail-back" onclick="setView('macro')">← Retour à la vue macro</button>
+      <div class="detail-tabs" id="detail-tabs">
+        <button class="detail-tab active" data-tab="current" onclick="setDetailTab(this)">Vue actuelle</button>
+        <button class="detail-tab" data-tab="notes" onclick="setDetailTab(this)">Notes coach</button>
+      </div>
+      <div id="tab-current"></div>
+      <div id="tab-notes" class="hidden" style="background:#fff;border-radius:var(--r-md);box-shadow:var(--sh-md);padding:20px 22px">
+        <div class="section-title" style="margin-bottom:12px">Notes meta coach</div>
+        <div id="notes-content" style="font-size:12px;color:var(--grey-700);line-height:1.6;background:var(--grey-50);padding:13px 15px;border-radius:var(--r-sm);border-left:4px solid var(--cyan)"></div>
+      </div>
+    </section>
+
+    <!-- CHAT -->
+    <section id="view-chat" class="view-section">
+      <div class="chat-wrap">
+        <div class="chat-header">
+          <div><h2>Chat reporting — BGL BNP</h2><p>Posez vos questions sur les 7 projets coachés.</p></div>
+          <div class="chat-ctx-pill">7 projets en contexte</div>
+        </div>
+        <div class="chat-body" id="chat-body">
+          <div class="chat-msg assistant">
+            <div class="chat-avatar">I</div>
+            <div class="chat-bubble"><p>Bonjour, je suis votre assistant pour le <strong>Reporting Coaching BGL BNP 2026</strong>. Je connais les 7 projets du programme — statuts, avancements, axes, warnings et prochaines étapes.</p></div>
+          </div>
+        </div>
+        <div class="suggestion-row">
+          <button class="suggestion" onclick="sendMsg(this.textContent)">Projets les plus avancés ?</button>
+          <button class="suggestion" onclick="sendMsg(this.textContent)">Blocages critiques</button>
+          <button class="suggestion" onclick="sendMsg(this.textContent)">Projets sans sponsor</button>
+          <button class="suggestion" onclick="sendMsg(this.textContent)">État de la conformité</button>
+          <button class="suggestion" onclick="sendMsg(this.textContent)">Warnings de RM Briefing</button>
+        </div>
+        <div class="chat-input-row">
+          <textarea id="chat-input" placeholder="Votre question…" rows="1"></textarea>
+          <button class="chat-send" onclick="sendMsg(document.getElementById('chat-input').value)">Envoyer</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+<div class="footer">Reporting Coaching INSKIP — AI Facilitator Programme BGL BNP · Mis à jour mensuellement à partir des sessions de coaching et des transcripts Notion.</div>
+
+<script>
+const PROJECTS=[
+  {id:'uc7',name:'RM Briefing',status:'PROTOTYPE',nextSession:'12/06/2026 — Point coaching mensuel',confidence:'high',avancement:55,vp:'Synthèse automatique de la relation client à destination des RM avant chaque rendez-vous, à partir des historiques CRM et des interactions récentes.',conformite:{dpo:'Validé',risk:'Faible',perso:true,notes:['Données CRM internes BGL uniquement','Hébergement sur infrastructure BGL','DPO validé sans restriction ni condition','Pas de données clients externes impliquées']},team:[{name:'Victor Dilion',role:'Porteur principal',org:'BGL BNP'},{name:'Pierre-Etienne Staes',role:'Développement',org:'BGL BNP'},{name:'Sylvain Sarda',role:'Référent métier',org:'BGL BNP'}],stakeholders:[{name:'Sponsor CoDir',role:'Sponsor',org:'Direction Commerciale'},{name:'Matthieu Chéreau',role:'Coach',org:'INSKIP'}],specs:3,gouv:3,budget:3,tests:2,conformiteScore:3,objectives:[{cat:'PROTOTYPE SYNTHÈSE',desc:'Finaliser le prototype de synthèse client — 3 formats validés avec les RM',pct:80},{cat:'INTÉGRATION CRM LIVE',desc:'Connecter le modèle aux données CRM live BGL (historique 18 mois)',pct:45},{cat:'PILOTE TERRAIN',desc:'Lancer un pilote sur 5 RM volontaires et mesurer le NPS après 2 semaines',pct:20}],achievements:['Prototype fonctionnel validé en session Module 3','Budget 2026 engagé — enveloppe confirmée par la direction','DPO validé sans restriction','Sponsor CoDir identifié et engagé'],utilisateurs:['Relationship Managers — 40 à 60 utilisateurs cibles','Direction Commerciale — commanditaire et évaluateur','Équipe Data BGL — intégration et maintenance'],warnings:['Plan de déploiement pilote non encore lancé','Volumétrie données CRM à calibrer pour la performance'],nextSteps:['Lancer le pilote sur 5 RM volontaires','Mesurer le NPS après 2 semaines d\'utilisation','Préparer le plan de déploiement pour les 40 RM restants'],notesMeta:'Projet le plus avancé de la cohort. Sponsor CoDir engagé. Budget 2026 confirmé. DPO validé. Seul blocage : lancement effectif du pilote terrain.'},
+  {id:'uc1',name:'Aide aux SAR',status:'PROTOTYPE',nextSession:'12/06/2026 — Point coaching mensuel',confidence:'high',avancement:45,vp:'Assister les analystes Compliance dans la détection et la rédaction des déclarations de soupçon, en réduisant le temps de traitement par dossier.',conformite:{dpo:'Validé',risk:'Moyen',perso:true,notes:['Données transactionnelles sensibles (AML/CFT)','DPO validé — périmètre clairement défini','Accès restreint aux analystes habilités','Piste d\'audit obligatoire sur chaque décision IA']},team:[{name:'Porteur UC1',role:'Analyste Compliance',org:'BGL BNP'},{name:'Porteur 2 UC1',role:'Développement',org:'BGL BNP'},{name:'Porteur 3 UC1',role:'Référent métier',org:'BGL BNP'}],stakeholders:[{name:'Responsable Conformité',role:'Sponsor',org:'BGL Compliance'},{name:'Matthieu Chéreau',role:'Coach',org:'INSKIP'}],specs:3,gouv:2,budget:3,tests:2,conformiteScore:3,objectives:[{cat:'DÉTECTION ALERTES',desc:'Prototype de détection SAR avec seuils configurables',pct:70},{cat:'INTÉGRATION WORKFLOW',desc:'Intégrer dans le workflow Compliance existant',pct:35},{cat:'TESTS ANALYSTES',desc:'3 sessions de test avec analystes Compliance',pct:15}],achievements:['Prototype de détection opérationnel','Budget 2026 confirmé par la direction Compliance','DPO validé avec périmètre défini'],utilisateurs:['Analystes Compliance — 8 utilisateurs directs','Responsable Conformité — évaluateur final','Régulateur CSSF — destinataire indirect'],warnings:['Portage directeur non encore formalisé','Dépendance à un seul sponsor intermédiaire'],nextSteps:['Planifier session test avec 3 analystes Compliance','Valider les critères de déclenchement avec le Responsable','Formaliser le portage directeur'],notesMeta:'Deuxième projet le plus avancé. DPO validé. Budget confirmé. Point de vigilance : portage directeur non formalisé.'},
+  {id:'uc3',name:'Scoring CV',status:'PROTOTYPE',nextSession:'19/06/2026 — Point coaching',confidence:'medium',avancement:35,vp:'Automatiser la présélection des candidats sur la base de critères objectifs définis par les RH, pour réduire le temps de traitement et limiter les biais.',conformite:{dpo:'En cours',risk:'Fort',perso:true,notes:['Données personnelles candidats (CV, parcours)','Validation DPO en cours — non finalisée','Audit biais algorithmique obligatoire avant production','Risque RGPD fort sans validation']},team:[{name:'Porteur UC3',role:'Chargé de Recrutement',org:'BGL RH'},{name:'Porteur 2 UC3',role:'Data Analyst',org:'BGL BNP'},{name:'Porteur 3 UC3',role:'RH Partenaire',org:'BGL BNP'}],stakeholders:[{name:'DRH BGL',role:'Sponsor',org:'Direction RH'},{name:'DPO BGL',role:'Conformité',org:'BGL BNP'},{name:'Matthieu Chéreau',role:'Coach',org:'INSKIP'}],specs:3,gouv:2,budget:2,tests:1,conformiteScore:2,objectives:[{cat:'MODÈLE SCORING RH',desc:'Modèle de scoring sur critères objectifs DRH validés',pct:60},{cat:'TEST CORPUS CV',desc:'Test sur 50 CV réels avec contrôle humain',pct:25},{cat:'AUDIT BIAIS + DPO',desc:'Audit biais algorithmique et finalisation DPO',pct:10}],achievements:['Modèle de scoring basé sur critères RH opérationnel','Test partiel sur corpus contrôlé effectué'],utilisateurs:['Chargés de Recrutement — 5 à 8 utilisateurs','Direction RH — commanditaire et responsable éthique','Candidats — impactés par la décision algorithmique'],warnings:['Audit biais non planifié — bloquant pour le DPO','Validation DPO non finalisée — déploiement impossible sans elle'],nextSteps:['Planifier l\'audit biais avec le DPO en priorité absolue','Présenter les résultats au groupe BNP pour validation','Confirmer le budget 2026 avec la DRH'],notesMeta:'Risque conformité élevé. L\'audit biais est le blocage critique — sans lui, pas de validation DPO ni de déploiement en production.'},
+  {id:'uc5',name:'Client Insight AI',status:'IDEATION',nextSession:'19/06/2026 — Point coaching',confidence:'medium',avancement:20,vp:'Agréger les signaux clients issus de sources multiples pour produire une vue enrichie à destination des conseillers.',conformite:{dpo:'Non initié',risk:'Moyen',perso:true,notes:['Sources externes non encore validées','Agrégation multi-sources : risque RGPD à cartographier','Démarche DPO à initier dès prochaine session','Données profil financier clients (sensibles)']},team:[{name:'Porteur UC5',role:'Conseiller Banque Privée',org:'BGL BNP'},{name:'Porteur 2 UC5',role:'Data Engineer',org:'BGL BNP'},{name:'Porteur 3 UC5',role:'Analyste Client',org:'BGL BNP'}],stakeholders:[{name:'Aucun sponsor',role:'—',org:'—'},{name:'Matthieu Chéreau',role:'Coach',org:'INSKIP'}],specs:2,gouv:0,budget:2,tests:0,conformiteScore:1,objectives:[{cat:'VALIDATION SOURCES',desc:'Identifier et valider les sources disponibles dans le data hub BGL',pct:30},{cat:'ARCHITECTURE',desc:'Concevoir l\'architecture d\'agrégation multi-sources',pct:10},{cat:'MAQUETTE RESTITUTION',desc:'Produire une maquette pour les conseillers',pct:5}],achievements:['Architecture sources identifiée en session','Data hub BGL validé comme source principale'],utilisateurs:['Conseillers Banque Privée — 20 à 30 cibles','Direction Banque Privée — commanditaire potentiel','Équipe Data BGL — intégration'],warnings:['Aucun sponsor identifié — bloquant pour le budget','Dépendance non résolue sur sources externes (Module 4)','Zéro test utilisateur réalisé'],nextSteps:['Identifier un sponsor côté Banque Privée','Clarifier le statut des sources externes','Initier la démarche DPO'],notesMeta:'Gouvernance entièrement à construire. Aucun sponsor — c\'est le blocage prioritaire. DPO à initier dès que la gouvernance est stabilisée.'},
+  {id:'uc6',name:'Cartographie BGL',status:'IDEATION',nextSession:'26/06/2026 — Point coaching',confidence:'high',avancement:10,vp:'Cartographie visuelle et navigable de l\'architecture fonctionnelle BGL à partir des procédures internes, pour les équipes Transformation et Audit.',conformite:{dpo:'Non initié',risk:'Faible',perso:false,notes:['Pas de données personnelles (procédures internes)','Risque conformité faible à ce stade','DPO à initier en phase prototype','Hébergement interne BGL prévu']},team:[{name:'Victor Dilion',role:'Porteur principal',org:'BGL BNP'},{name:'Pierre-Etienne Staes',role:'Développement graphe',org:'BGL BNP'},{name:'Sylvain Sarda',role:'Référent Transformation',org:'BGL BNP'}],stakeholders:[{name:'Équipe Data Lab',role:'Partenaire technique',org:'BGL BNP'},{name:'Direction Transformation',role:'Sponsor potentiel',org:'BGL COO'},{name:'Matthieu Chéreau',role:'Coach',org:'INSKIP'}],specs:2,gouv:1,budget:2,tests:0,conformiteScore:0,objectives:[{cat:'ANCRAGE DATA LAB',desc:'Point avec Data Lab sur le projet RAG procédures existant',pct:20},{cat:'UTILISATEURS & MAQUETTE',desc:'Qualifier les utilisateurs et produire une maquette basse fidélité',pct:10},{cat:'PROTOTYPE GRAPHE',desc:'Prototype de cartographie sur un sous-ensemble de procédures',pct:0}],achievements:['Portage sur projet Data Lab existant (RAG procédures)','Statut Ready selon évaluation Module 4'],utilisateurs:['Équipes Transformation / COO — navigabilité procédures','Équipes Audit interne — cartographie dépendances','Management opérationnel — vue fonctionnelle'],warnings:['Aucun point Data Lab fait spécifiquement pour ce projet','Pas de prototype — critère : navigabilité du graphe, pas précision LLM','Budget propre à confirmer'],nextSteps:['Organiser un point avec l\'équipe Data Lab','Définir les utilisateurs cibles et critère de succès','Construire le premier prototype de graphe'],notesMeta:'Adossé à un projet Data Lab existant (RAG procédures). Force : base technique disponible. Faiblesse : aucun point Data Lab spécifique, aucun prototype.'},
+  {id:'uc4',name:'Best Offer crédit',status:'IDEATION',nextSession:'26/06/2026 — Point coaching',confidence:'low',avancement:15,vp:'Recommander automatiquement la meilleure offre de crédit hypothécaire personnalisée à partir du profil de risque client et des conditions de marché.',conformite:{dpo:'Non initié',risk:'Fort',perso:true,notes:['Données financières et scoring crédit (très sensibles)','Décision à impact financier direct — risque RGPD fort','DPO à initier dès stabilisation du cas d\'usage','Risque réglementaire bancaire (CCD2, MiFID2)']},team:[{name:'Porteur UC4',role:'Chargé de clientèle',org:'BGL BNP'},{name:'Porteur 2 UC4',role:'Data Analyst',org:'BGL BNP'},{name:'Porteur 3 UC4',role:'Analyste Crédit',org:'BGL BNP'}],stakeholders:[{name:'Aucun sponsor',role:'—',org:'—'},{name:'Matthieu Chéreau',role:'Coach',org:'INSKIP'}],specs:1,gouv:0,budget:2,tests:0,conformiteScore:0,objectives:[{cat:'CADRAGE CAS D\'USAGE',desc:'Formaliser et stabiliser le cas d\'usage crédit hypothécaire',pct:20},{cat:'ACCÈS DONNÉES SCORING',desc:'Clarifier l\'accès aux données de scoring crédit BGL',pct:10},{cat:'PROTOTYPE RECOMMANDATION',desc:'Premier prototype de recommandation d\'offre',pct:0}],achievements:['Cas d\'usage en cours de cadrage — première version identifiée'],utilisateurs:['Chargés de clientèle Particuliers — 15 à 20 cibles','Direction Crédits — commanditaire potentiel','Clients particuliers — bénéficiaires finaux'],warnings:['Haute complexité — accès données scoring crédit non résolu','Aucun sponsor — sans portage, pas de données ni de budget','Conformité non initiée — risque réglementaire élevé','Confidence faible — à revoir en priorité'],nextSteps:['Identifier un sponsor côté Direction Crédits','Stabiliser le PRD avant d\'approcher la DSI','Démarche préliminaire DPO sur le périmètre'],notesMeta:'Fort potentiel métier mais complexité maximale. À prioriser en Phase 2 après stabilisation des projets moins complexes. Confidence faible justifiée.'},
+  {id:'uc2',name:'Profilage multicanal',status:'IDEATION',nextSession:'TBD — Blocage DPO actif',confidence:'medium',avancement:5,vp:'Analyser et router les interactions clients (emails, canaux digitaux, téléphone) pour construire un profil comportemental par segment.',conformite:{dpo:'BLOQUANT',risk:'Fort',perso:true,notes:['Accès emails externes clients BLOQUÉ par le DPO','Enjeu juridique critique — condition à tout avancement','Données comportementales sensibles (profilage client)','Sans feu vert DPO, aucune source principale disponible']},team:[{name:'Olivier Péné',role:'Porteur principal',org:'BGL BNP'},{name:'Christophe Leroy',role:'Développement',org:'BGL BNP'},{name:'David Zimnoch',role:'Référent canal digital',org:'BGL BNP'}],stakeholders:[{name:'Tribe Digital Channel',role:'Partenaire technique',org:'BGL BNP'},{name:'DPO BGL',role:'Blocage actif',org:'BGL BNP'},{name:'Matthieu Chéreau',role:'Coach',org:'INSKIP'}],specs:1,gouv:0,budget:1,tests:0,conformiteScore:0,objectives:[{cat:'DÉBLOCAGE DPO',desc:'Résoudre le blocage juridique DPO sur l\'accès aux emails externes',pct:5},{cat:'MODÈLE SEGMENTATION',desc:'Construire les premiers clusters comportementaux via data hub',pct:0},{cat:'CADRAGE BUDGET 2027',desc:'Formaliser le PRD et inscrire dans la roadmap 2027',pct:10}],achievements:['Architecture sources identifiée','Data hub validé pour canaux digitaux et téléphone'],utilisateurs:['Équipes Relation Client / Canal Digital — 10 à 15 cibles','CDO / Tribe Digital Channel — commanditaire','Direction Marketing — bénéficiaire des insights'],warnings:['Accès emails externes bloqué par le DPO — condition critique absolue','Budget 2027 uniquement — aucun budget 2026 identifié','Aucun sponsor identifié — projet en attente de portage'],nextSteps:['Résoudre le blocage DPO avant tout autre avancement','Point Data Lab sur les sources disponibles dans le data hub','Formaliser le PRD pour la roadmap 2027'],notesMeta:'Blocage DPO critique. Matthieu a indiqué qu\'il adaptera l\'accompagnement selon l\'issue du point DPO. Budget 2027 uniquement envisagé.'}
+];
+
+const AX_KEYS=['specs','gouv','budget','tests','conformiteScore'];
+const AX_LABELS=['Spécifs','Gouver.','Budget','Tests','Conform.'];
+const AX_SUB=['Non initié','Faible','Partiel','Validé'];
+let curId=PROJECTS[0].id,curView='macro',curFilter='all',searchQ='';
+let cProgress=null,cAxes=null;
+
+function ini(n){return n.split(' ').filter(Boolean).slice(0,2).map(s=>s[0]).join('').toUpperCase()}
+function avg(p){return Math.round(p.objectives.reduce((s,o)=>s+(o.pct||0),0)/p.objectives.length)}
+function axCls(v){return v>=3?'ok':v>=2?'mid':v>=1?'ko':'none'}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function renderSidebar(){
+  const list=PROJECTS.filter(p=>(curFilter==='all'||p.status===curFilter)&&(!searchQ||p.name.toLowerCase().includes(searchQ.toLowerCase())));
+  document.getElementById('sb-count').textContent=list.length;
+  document.getElementById('project-list').innerHTML=list.map(p=>`
+    <li class="project-item${p.id===curId?' active':''}" onclick="selectProject('${p.id}')">
+      <div class="pi-name">${esc(p.name)}<span class="status-pip ${p.status==='PROTOTYPE'?'proto':'idea'}">${p.status==='PROTOTYPE'?'PROTO':'IDÉA'}</span></div>
+      <div class="pi-meta">${avg(p)}% · Conf. ${p.confidence}</div>
+    </li>`).join('');
+}
+
+function renderGrid(){
+  document.getElementById('project-grid').innerHTML=PROJECTS.map(p=>`
+    <div class="proj-card" onclick="selectProject('${p.id}');setView('detail')">
+      <div class="proj-card-head"><h3>${esc(p.name)}</h3><span class="proj-card-status ${p.status==='IDEATION'?'idea':''}">${p.status==='PROTOTYPE'?'PROTOTYPE':'IDÉATION'}</span></div>
+      <div class="proj-card-body">
+        <div class="proj-card-vp">${esc(p.vp)}</div>
+        <div class="proj-card-meta"><span>${p.team.length} membres</span><span>Conf. ${p.confidence}</span></div>
+        <div class="proj-card-progress">
+          <div class="pm-label"><span>Avancement</span><strong>${avg(p)}%</strong></div>
+          <div class="pm-track"><div class="pm-fill" style="width:${avg(p)}%"></div></div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderDetail(id){
+  const p=PROJECTS.find(x=>x.id===id);if(!p)return;
+  const dpoColor=p.conformite.dpo==='Validé'?'#A5F3A5':p.conformite.dpo==='BLOQUANT'?'#FFAAAA':'#FFE082';
+  document.getElementById('tab-current').innerHTML=`
+    <div class="detail-view">
+      <div class="left-panel">
+        <div class="left-board">${esc(p.nextSession)}</div>
+        <div class="project-name">${esc(p.name)}</div>
+        <div class="vp-box"><h4>Proposition de valeur</h4><div class="vp-text">${esc(p.vp)}</div></div>
+        <div class="conf-section">
+          <h4>Conformité &amp; Risques</h4>
+          ${p.conformite.notes.map(n=>`<div class="conf-item">${esc(n)}</div>`).join('')}
+          <div class="conf-pills">
+            <span class="conf-pill">DPO : <span style="color:${dpoColor}">${esc(p.conformite.dpo)}</span></span>
+            <span class="conf-pill">Risque : ${esc(p.conformite.risk)}</span>
+            <span class="conf-pill">Perso : ${p.conformite.perso?'Oui':'Non'}</span>
+          </div>
+        </div>
+        <div class="team-section">
+          <div class="team-label">TEAM</div>
+          <div class="team-list">
+            ${p.team.map(m=>`<div class="team-member"><div class="team-avatar">${ini(m.name)}</div><div><div class="team-name">${esc(m.name)}</div><div class="team-role">${esc(m.role)}</div><div class="team-org">${esc(m.org)}</div></div></div>`).join('')}
+          </div>
+          <div class="stakeholders">
+            <div class="stk-title">Stakeholders</div>
+            <div class="stk-grid">${p.stakeholders.map(s=>`<div class="stk-item"><strong>${esc(s.name)}</strong>${esc(s.role)} · ${esc(s.org)}</div>`).join('')}</div>
+          </div>
+        </div>
+      </div>
+      <div class="right-panel">
+        <div class="right-header">
+          <span class="right-header-tag">${p.id.toUpperCase()}</span>
+          <span class="right-header-status ${p.status==='IDEATION'?'idea':''}">${p.status}</span>
+        </div>
+        <div class="right-body">
+          <div style="margin-bottom:16px">
+            <div class="section-title">Axes d'évaluation</div>
+            <div class="axes-row">${AX_KEYS.map((k,i)=>`<div class="axis-cell ${axCls(p[k])}"><div class="ax-lbl">${AX_LABELS[i]}</div><div class="ax-val">${p[k]}/3</div><div class="ax-sub">${AX_SUB[p[k]]||'—'}</div></div>`).join('')}</div>
+          </div>
+          <div class="objectives">
+            <div class="section-title">Objectifs en cours</div>
+            ${p.objectives.map(o=>`
+              <div class="objective">
+                <div><div class="obj-cat">${esc(o.cat)}</div><div class="obj-desc">${esc(o.desc)}</div></div>
+                <div class="obj-bar"><div class="obj-bar-track"><div class="obj-bar-marker" style="left:${o.pct}%"></div></div></div>
+                <div class="obj-pct">${o.pct}%</div>
+              </div>`).join('')}
+          </div>
+          <div class="two-col">
+            <div>
+              <div class="section-title" style="font-size:13px;margin-bottom:8px">Achievements</div>
+              <ul class="list-clean bullets">${p.achievements.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>
+            </div>
+            <div>
+              <div class="section-title" style="font-size:13px;margin-bottom:8px">Utilisateurs internes cibles</div>
+              <ul class="list-clean targets">${p.utilisateurs.map(u=>`<li>${esc(u)}</li>`).join('')}</ul>
+            </div>
+          </div>
+          <div class="warning-box">
+            <div class="section-title" style="font-size:13px;margin-bottom:8px">Warnings</div>
+            <ul class="list-clean warnings">${p.warnings.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>
+          </div>
+          <div class="next-steps-box">
+            <div style="font-size:12px;font-weight:700;color:var(--purple);margin-bottom:7px">Prochaines étapes</div>
+            <ul class="next-steps-list">${p.nextSteps.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('notes-content').textContent=p.notesMeta;
+}
+
+function selectProject(id){
+  curId=id;
+  renderSidebar();
+  setView('detail');
+}
+
+function setView(v){
+  curView=v;
+  document.querySelectorAll('.view-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelector(`.nav-btn[data-view="${v}"]`).classList.add('active');
+  if(v==='macro')renderCharts();
+  if(v==='detail')renderDetail(curId);
+}
+
+function setDetailTab(btn){
+  document.querySelectorAll('.detail-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const tab=btn.dataset.tab;
+  document.getElementById('tab-current').classList.toggle('hidden',tab!=='current');
+  document.getElementById('tab-notes').classList.toggle('hidden',tab!=='notes');
+}
+
+function renderCharts(){
+  const sorted=[...PROJECTS].sort((a,b)=>avg(b)-avg(a));
+  if(cProgress){cProgress.destroy();cProgress=null;}
+  if(cAxes){cAxes.destroy();cAxes=null;}
+  cProgress=new Chart(document.getElementById('chart-progress'),{
+    type:'bar',
+    data:{labels:sorted.map(p=>p.name),datasets:[{data:sorted.map(p=>avg(p)),backgroundColor:sorted.map(p=>avg(p)>=40?'#00915A':avg(p)>=20?'#27455C':'#E07818'),borderRadius:5,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,max:100,ticks:{font:{size:9},callback:v=>v+'%'}},y:{ticks:{font:{size:10},color:'#27455C'}}}}
+  });
+  const axAvg=AX_KEYS.map(k=>Math.round(PROJECTS.reduce((s,p)=>s+p[k],0)/PROJECTS.length/3*100));
+  cAxes=new Chart(document.getElementById('chart-axes'),{
+    type:'bar',
+    data:{labels:AX_LABELS,datasets:[{data:axAvg,backgroundColor:axAvg.map(v=>v>=70?'#00915A':v>=40?'#27455C':'#E07818'),borderRadius:5,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,max:100,ticks:{font:{size:9},callback:v=>v+'%'}},y:{ticks:{font:{size:9}}}}}
+  });
+  document.getElementById('kpi-proto').textContent=PROJECTS.filter(p=>p.status==='PROTOTYPE').length;
+  document.getElementById('kpi-avg').textContent=Math.round(PROJECTS.reduce((s,p)=>s+avg(p),0)/PROJECTS.length)+'%';
+}
+
+// Chat
+function sendMsg(t){
+  if(!t||!t.trim())return;
+  const body=document.getElementById('chat-body');
+  body.innerHTML+=`<div class="chat-msg user"><div class="chat-avatar">M</div><div class="chat-bubble"><p>${esc(t.trim())}</p></div></div>`;
+  document.getElementById('chat-input').value='';
+  const tid='__t'+Date.now();
+  body.innerHTML+=`<div class="chat-msg assistant" id="${tid}"><div class="chat-avatar">I</div><div class="chat-bubble"><div class="thinking"><span></span><span></span><span></span></div></div></div>`;
+  body.scrollTop=99999;
+  setTimeout(()=>{
+    const el=document.getElementById(tid);if(el)el.remove();
+    body.innerHTML+=`<div class="chat-msg assistant"><div class="chat-avatar">I</div><div class="chat-bubble">${localAnswer(t.trim())}</div></div>`;
+    body.scrollTop=99999;
+  },700);
+}
+function localAnswer(t){
+  const n=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const nt=n(t);
+  const hit=PROJECTS.filter(p=>nt.includes(n(p.name))||nt.includes(p.id));
+  if(hit.length===1){
+    const p=hit[0];
+    if(/warning|risque|alerte|blocage/.test(nt))return`<p><strong>${p.name}</strong> — warnings :</p><ul>${p.warnings.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`;
+    if(/next|prochaine|etape/.test(nt))return`<p><strong>${p.name}</strong> — prochaines étapes :</p><ul>${p.nextSteps.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`;
+    if(/conform|dpo/.test(nt))return`<p><strong>${p.name}</strong> — DPO : <strong>${esc(p.conformite.dpo)}</strong>, risque ${esc(p.conformite.risk)}. ${esc(p.conformite.notes[0])}</p>`;
+    return`<p><strong>${p.name}</strong> (${p.status}) — avancement ${avg(p)}%, confiance ${p.confidence}.</p><p>${esc(p.vp)}</p>`;
+  }
+  if(/plus avance|top/.test(nt)){const s=[...PROJECTS].sort((a,b)=>avg(b)-avg(a));return`<p>Projets les plus avancés :</p><ul>${s.slice(0,3).map(p=>`<li><strong>${p.name}</strong> — ${avg(p)}%</li>`).join('')}</ul>`;}
+  if(/blocage|critique/.test(nt)){const l=PROJECTS.filter(p=>p.warnings.some(w=>/bloquant|critique/.test(w.toLowerCase())));return`<p>Projets avec blocages critiques :</p><ul>${l.map(p=>`<li><strong>${p.name}</strong> : ${esc(p.warnings[0])}</li>`).join('')}</ul>`;}
+  if(/sponsor/.test(nt)){const l=PROJECTS.filter(p=>p.gouv===0);return`<p>${l.length} projet(s) sans sponsor : <strong>${l.map(p=>p.name).join(', ')}</strong>.</p>`;}
+  if(/conform|dpo/.test(nt))return`<p>État conformité :</p><ul>${PROJECTS.map(p=>`<li><strong>${p.name}</strong> — DPO : ${esc(p.conformite.dpo)}, risque ${esc(p.conformite.risk)}</li>`).join('')}</ul>`;
+  if(/prototype/.test(nt)){const l=PROJECTS.filter(p=>p.status==='PROTOTYPE');return`<p>${l.length} projet(s) en prototype : <strong>${l.map(p=>p.name).join(', ')}</strong>.</p>`;}
+  if(/retard|moins/.test(nt)){const s=[...PROJECTS].sort((a,b)=>avg(a)-avg(b));return`<p>Projets les moins avancés :</p><ul>${s.slice(0,3).map(p=>`<li><strong>${p.name}</strong> — ${avg(p)}%</li>`).join('')}</ul>`;}
+  return`<p>Je peux répondre sur les 7 projets BGL BNP. Exemples : <em>"warnings de RM Briefing"</em>, <em>"projets sans sponsor"</em>, <em>"état de la conformité"</em>.</p>`;
+}
+
+document.querySelectorAll('.filter-chip').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('.filter-chip').forEach(x=>x.classList.remove('active'));
+  c.classList.add('active');curFilter=c.dataset.filter;renderSidebar();
+}));
+document.getElementById('search-input').addEventListener('input',e=>{searchQ=e.target.value;renderSidebar();});
+document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg(e.target.value);}});
+
+renderSidebar();renderGrid();renderCharts();
+</script>
+</body>
+</html>
