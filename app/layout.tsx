@@ -33,8 +33,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <AppHeader />
             {children}
             <div className="footer">
-            Reporting Coaching INSKIP — AI Facilitator Programme BGL BNP · Mis à jour mensuellement à partir des
-            sessions de coaching et des transcripts Notion.
+            Cette plateforme est mise à disposition par Polytechnique Executive Education pour BGL BNP
             </div>
           </DataProvider>
         </RoleProvider>

@@ -476,6 +476,51 @@ button { font-family: inherit; cursor: pointer; border: none; }
   .check-list { grid-template-columns: 1fr; }
 }
 
+/* === DASHBOARD ACCUEIL (espace utilisateur) === */
+.dash { display: flex; flex-direction: column; gap: 18px; }
+.dash-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.dash-action { display: flex; gap: 12px; align-items: flex-start; text-align: left; background: #fff; border: 1px solid var(--grey-100); border-radius: var(--r-md); box-shadow: var(--sh-sm); padding: 15px; cursor: pointer; font-family: inherit; transition: transform .15s, box-shadow .15s; }
+.dash-action:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
+.dash-action-icon { width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; color: #fff; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; font-family: var(--font-cond); }
+.dash-action h3 { font-size: 14px; font-weight: 600; color: var(--slate); font-family: var(--font-cond); text-transform: uppercase; letter-spacing: .2px; margin-bottom: 3px; }
+.dash-action p { font-size: 11px; color: var(--grey-700); line-height: 1.4; font-weight: 300; }
+.dash-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dash-panel { background: #fff; border: 1px solid var(--grey-100); border-radius: var(--r-md); box-shadow: var(--sh-sm); padding: 14px 16px; }
+.dash-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.dash-panel-head h3 { font-size: 12px; font-weight: 600; color: var(--slate); text-transform: uppercase; letter-spacing: .5px; font-family: var(--font-cond); }
+.dash-link { background: transparent; font-size: 11px; font-weight: 600; color: var(--green-dark); font-family: var(--font-cond); text-transform: uppercase; letter-spacing: .3px; }
+.dash-link:hover { color: var(--green); }
+.dash-events { display: flex; flex-direction: column; gap: 10px; }
+.dash-event { display: flex; gap: 11px; align-items: flex-start; }
+.dash-event-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 46px; border: 2px solid var(--cyan); border-radius: var(--r-sm); padding: 5px 4px; }
+.dash-event-day { font-size: 17px; font-weight: 700; color: var(--slate); font-family: var(--font-cond); line-height: 1; }
+.dash-event-month { font-size: 9px; font-weight: 600; text-transform: uppercase; color: var(--grey-500); font-family: var(--font-cond); }
+.dash-event-body { flex: 1; min-width: 0; }
+.dash-event-title { font-size: 13px; font-weight: 600; color: var(--slate); font-family: var(--font-cond); margin: 4px 0 2px; }
+.dash-event-meta { font-size: 10px; color: var(--grey-500); }
+.dash-uc { display: flex; flex-direction: column; gap: 9px; }
+.dash-uc-row { display: flex; gap: 9px; align-items: flex-start; }
+.dash-uc-rank { font-size: 11px; font-weight: 700; color: var(--grey-500); font-family: var(--font-cond); min-width: 20px; }
+.dash-uc-votes { font-size: 11px; font-weight: 700; color: var(--green-dark); font-family: var(--font-cond); min-width: 40px; }
+.dash-uc-main { flex: 1; min-width: 0; }
+.dash-uc-title { font-size: 13px; font-weight: 600; color: var(--slate); line-height: 1.3; margin-bottom: 4px; }
+.dash-uc-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+
+/* === ANNUAIRE === */
+.dir-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 11px; }
+.dir-card { display: flex; gap: 12px; background: #fff; border: 1px solid var(--grey-100); border-radius: var(--r-md); box-shadow: var(--sh-sm); padding: 13px 15px; align-items: flex-start; }
+.dir-avatar { width: 38px; height: 38px; flex-shrink: 0; border-radius: 50%; color: #fff; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; font-family: var(--font-cond); }
+.dir-body { min-width: 0; }
+.dir-name { font-size: 13px; font-weight: 700; color: var(--slate); font-family: var(--font-cond); letter-spacing: .2px; }
+.dir-role { font-size: 11px; font-weight: 600; color: var(--green-dark); }
+.dir-scope { font-size: 11px; color: var(--grey-700); line-height: 1.4; margin-top: 3px; }
+.dir-meta { font-size: 10px; color: var(--grey-500); margin-top: 4px; }
+
+@media (max-width: 900px) {
+  .dash-actions { grid-template-columns: 1fr; }
+  .dash-cols { grid-template-columns: 1fr; }
+}
+
 /* Responsive — tablette (iPad landscape min, §9 must-have) */
 @media (max-width: 1024px) {
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
