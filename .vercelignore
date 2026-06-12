@@ -1,0 +1,5 @@
+.env*
+HANDOVER.md
+inskip-bgl-dashboard.html
+.next
+node_modules
