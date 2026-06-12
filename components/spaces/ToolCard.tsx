@@ -13,18 +13,18 @@ const PRIO_CLASS: Record<Tool['prio'], string> = {
   'à statuer': 'todo',
 }
 
-/** Carte d'outil de la boîte à outils facilitateur (coquille v1). */
-export default function ToolCard({ tool }: { tool: Tool }) {
+/** Carte d'outil de la boîte à outils facilitateur. Cliquable → ouvre l'outil. */
+export default function ToolCard({ tool, onOpen }: { tool: Tool; onOpen?: () => void }) {
   return (
-    <div className="tool-card">
+    <button className="tool-card" onClick={onOpen} disabled={!onOpen}>
       <div className="tool-card-head">
         <h3>{tool.title}</h3>
         <span className={`prio-badge ${PRIO_CLASS[tool.prio]}`}>{tool.prio}</span>
       </div>
       <p className="tool-card-obj">{tool.objective}</p>
       <div className="tool-card-foot">
-        <span className="soon-badge">À venir</span>
+        <span className="tool-card-open">Ouvrir →</span>
       </div>
-    </div>
+    </button>
   )
 }
