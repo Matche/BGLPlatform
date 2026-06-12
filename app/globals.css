@@ -561,6 +561,17 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .role-badge.facilitateur { background: var(--green-soft); color: var(--green-dark); }
 .role-badge.utilisateur { background: rgba(39, 69, 92, .12); color: var(--slate); }
 
+/* === PAGE DE CONNEXION (gate démo) === */
+.login-wrap { display: flex; justify-content: center; align-items: flex-start; padding: 80px 16px; min-height: 60vh; }
+.login-card { background: #fff; border: 1px solid var(--grey-100); border-radius: var(--r-md); box-shadow: var(--sh-md); padding: 32px 30px; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 12px; text-align: center; }
+.login-logo { font-family: var(--font-cond); font-weight: 700; font-size: 24px; letter-spacing: 1.5px; color: var(--navy); text-transform: uppercase; }
+.login-logo span { color: var(--green); }
+.login-title { font-size: 12px; font-weight: 600; color: var(--slate); text-transform: uppercase; letter-spacing: .4px; font-family: var(--font-cond); }
+.login-sub { font-size: 12px; color: var(--grey-700); line-height: 1.5; margin-bottom: 4px; }
+.login-card input { border: 1px solid var(--grey-300); border-radius: var(--r-sm); padding: 10px 12px; font-family: inherit; font-size: 14px; outline: none; text-align: center; }
+.login-card input:focus { border-color: var(--cyan); }
+.login-card .btn-primary { width: 100%; padding: 11px; }
+
 /* Responsive — tablette (iPad landscape min, §9 must-have) */
 @media (max-width: 1024px) {
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
