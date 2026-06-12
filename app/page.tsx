@@ -1,10 +1,18 @@
-import { fetchProjects } from '@/lib/notion'
-import Dashboard from '@/components/Dashboard'
+'use client'
 
-// Revalidation ISR : les mises à jour Notion apparaissent dans les 5 minutes (§9).
-export const revalidate = 300
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useRole } from '@/components/role/RoleProvider'
+import { defaultPathForRole } from '@/lib/roles'
 
-export default async function Home() {
-  const payload = await fetchProjects()
-  return <Dashboard payload={payload} />
+// Page d'entrée : redirige vers le premier espace accessible au rôle courant.
+export default function Home() {
+  const { role, ready } = useRole()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (ready) router.replace(defaultPathForRole(role))
+  }, [ready, role, router])
+
+  return null
 }
