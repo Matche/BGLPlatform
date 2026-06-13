@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import BglLogo from '@/components/BglLogo'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -35,10 +36,10 @@ export default function LoginPage() {
   return (
     <main className="login-wrap">
       <form className="login-card" onSubmit={submit}>
-        <div className="login-logo">
-          INS<span>KIP</span>
+        <div className="login-logo-wrap">
+          <BglLogo height={46} />
         </div>
-        <div className="login-title">AI Facilitator Programme — BGL BNP</div>
+        <div className="login-title">AI Facilitator Programme</div>
         <p className="login-sub">Cet espace est protégé. Saisissez le mot de passe d’accès.</p>
         <input
           type="password"

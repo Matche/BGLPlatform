@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useRole } from '@/components/role/RoleProvider'
 import { spacesForRole } from '@/lib/roles'
 import RoleSwitcher from '@/components/role/RoleSwitcher'
+import BglLogo from '@/components/BglLogo'
 
 export default function AppHeader() {
   const { role, ready } = useRole()
@@ -13,16 +14,12 @@ export default function AppHeader() {
 
   return (
     <header className="top-header">
-      <div className="brand">
-        <Link href="/" className="brand-logo" style={{ textDecoration: 'none' }}>
-          INS<span>KIP</span>
-        </Link>
-        <div className="brand-divider" />
+      <Link href="/" className="brand" style={{ textDecoration: 'none' }}>
         <div>
           <div className="brand-title">AI Facilitator Programme</div>
           <div className="brand-sub">BGL BNP · Coaching 2026</div>
         </div>
-      </div>
+      </Link>
 
       <nav className="top-nav">
         {spaces.map((s) => {
@@ -35,7 +32,10 @@ export default function AppHeader() {
         })}
       </nav>
 
-      <RoleSwitcher />
+      <div className="header-right">
+        <RoleSwitcher />
+        <BglLogo height={26} textColor="#ffffff" />
+      </div>
     </header>
   )
 }
